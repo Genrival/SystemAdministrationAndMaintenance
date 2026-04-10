@@ -229,7 +229,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .res-id-card{display:inline-block;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:10px 20px;font-family:var(--mono);font-size:12px;margin-bottom:6px;line-height:1.8;}
 .res-id-card .val{color:var(--amber2);font-weight:700;}
 .res-ts{display:inline-block;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:10px 22px;font-family:var(--mono);font-size:13px;color:var(--text2);margin-bottom:20px;letter-spacing:.03em;}
-.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:520px;margin:0 auto 24px;}
+.res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:560px;margin:0 auto 24px;}
 .res-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;}
 .res-sv{font-size:22px;font-weight:700;font-family:var(--mono);margin-bottom:3px;}
 .c-ok{color:var(--teal);}.c-fail{color:var(--red);}.c-score{color:var(--amber);}
@@ -301,6 +301,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .fs-gate-sub,.fs-return-sub{font-size:12px;color:var(--text2);font-family:var(--mono);line-height:1.75;margin-bottom:18px;}
 .fs-gate-btn,.fs-return-btn{padding:12px 28px;background:var(--amber);border:none;border-radius:var(--rs);font-family:var(--mono);font-size:12px;font-weight:700;color:#0b0d12;cursor:pointer;margin-top:4px;}
 .fs-gate-btn:hover,.fs-return-btn:hover{background:var(--amber2);}
+.fs-gate-skip{display:none;width:100%;margin-top:14px;padding:11px 20px;background:transparent;border:1px solid var(--border2);border-radius:var(--rs);font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;line-height:1.5;}
+.fs-gate-skip:hover{border-color:var(--amber);color:var(--amber);}
 .fs-return-btn{background:var(--red);color:#fff;}
 .fs-return-btn:hover{background:#ff3344;}
 .fs-return-penalty{font-size:18px;font-weight:800;color:var(--red);font-family:var(--mono);margin:8px 0 14px;}
@@ -507,6 +509,7 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
             <div class="res-stat"><div class="res-sv c-fail" id="r-tabswitch">0</div><div class="res-sl">Tab Switches</div></div>
             <div class="res-stat"><div class="res-sv c-fail" id="r-fs-exit">0</div><div class="res-sl">Fullscreen exits</div></div>
             <div class="res-stat"><div class="res-sv c-fail" id="r-pip">0</div><div class="res-sl">Floating / PiP</div></div>
+            <div class="res-stat"><div class="res-sv c-fail" id="r-screenshot">0</div><div class="res-sl">Screenshot tries</div></div>
             <div class="res-stat"><div class="res-sv c-fail" id="r-penalty">−0 pts</div><div class="res-sl">Penalty</div></div>
           </div>
           <div class="review-block" id="review-block"></div>
@@ -564,8 +567,9 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
 <div class="fs-gate-overlay" id="fs-gate-overlay">
   <div class="fs-gate-box">
     <div class="fs-gate-title">Fullscreen required</div>
-    <div class="fs-gate-sub">This activity must run in fullscreen. Click below and allow fullscreen in your browser when prompted.</div>
+    <div class="fs-gate-sub" id="fs-gate-sub">This activity must run in fullscreen. Click below and allow fullscreen in your browser when prompted.</div>
     <button type="button" class="fs-gate-btn" id="fs-gate-btn" onclick="tryEnterExamFullscreen()">Enter fullscreen</button>
+    <button type="button" class="fs-gate-skip" id="fs-gate-skip" onclick="skipExamFullscreenMobile()">Continue on phone / tablet (no fullscreen)</button>
   </div>
 </div>
 
@@ -855,10 +859,17 @@ function attemptLogin() {
     startTimer();
     activityStarted=false;
     fsSessionInside=!!getFullscreenElement();
-    document.getElementById('fs-gate-overlay').classList.add('show');
+    if(mobileFullscreenBypass){
+      activityStarted=true;
+      document.getElementById('fs-gate-overlay').classList.remove('show');
+    }else{
+      document.getElementById('fs-gate-overlay').classList.add('show');
+    }
+    refreshMobileFullscreenUi();
   } else {
     initActivity();
     document.getElementById('pred-overlay').classList.add('show');
+    refreshMobileFullscreenUi();
   }
 }
 
@@ -1347,13 +1358,39 @@ let Q=[],scores=[],currentDragChipId=null,selectedChip=null;
 const TOTAL=QBANK.length;
 const INTEGRITY_PENALTY=5;
 let tabLeaveCount=0,activityStarted=false,predictedBand=null;
-let fullscreenExitCount=0,pipViolationCount=0;
+let fullscreenExitCount=0,pipViolationCount=0,screenshotAttemptCount=0;
 let fsSessionInside=false;
+let mobileFullscreenBypass=false;
 let pipPollArmed=true;
+let screenshotDebounceUntil=0;
 let warnAutoTimer=null;
 
+function isMobileExamDevice(){
+  const ua=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent||'');
+  const ipadOS=navigator.maxTouchPoints>1&&/MacIntel/.test(navigator.platform||'');
+  const coarse=typeof window.matchMedia==='function'&&window.matchMedia('(pointer: coarse)').matches;
+  const narrow=typeof window.matchMedia==='function'&&window.matchMedia('(max-width: 900px)').matches;
+  return ua||ipadOS||(coarse&&narrow);
+}
+function refreshMobileFullscreenUi(){
+  const skip=document.getElementById('fs-gate-skip');
+  const sub=document.getElementById('fs-gate-sub');
+  if(skip)skip.style.display=isMobileExamDevice()?'block':'none';
+  if(sub&&isMobileExamDevice()&&!sub.dataset.mobileTouched){
+    sub.dataset.mobileTouched='1';
+    sub.textContent='Many phones do not support true fullscreen in the browser. Try Enter fullscreen first; if it fails or your browser does not offer it, use the second button. Keep this tab open until you submit.';
+  }
+}
+function skipExamFullscreenMobile(){
+  mobileFullscreenBypass=true;
+  document.getElementById('fs-gate-overlay').classList.remove('show');
+  document.getElementById('fs-return-overlay').classList.remove('show');
+  if(!activityStarted)activityStarted=true;
+  saveProgress();
+}
+
 function totalIntegrityEvents(){
-  return tabLeaveCount+fullscreenExitCount+pipViolationCount;
+  return tabLeaveCount+fullscreenExitCount+pipViolationCount+screenshotAttemptCount;
 }
 function totalIntegrityPenaltyPts(){
   return totalIntegrityEvents()*INTEGRITY_PENALTY;
@@ -1374,8 +1411,10 @@ function tryEnterExamFullscreen(){
     document.getElementById('fs-gate-overlay').classList.remove('show');
     document.getElementById('fs-return-overlay').classList.remove('show');
     if(!activityStarted) activityStarted=true;
+    refreshMobileFullscreenUi();
   }).catch(()=>{
     document.getElementById('fs-gate-overlay').classList.add('show');
+    refreshMobileFullscreenUi();
   });
 }
 function exitFullscreenForResults(){
@@ -1384,6 +1423,11 @@ function exitFullscreenForResults(){
 }
 function handleFullscreenChange(){
   const nowInside=!!getFullscreenElement();
+  if(mobileFullscreenBypass){
+    fsSessionInside=nowInside;
+    if(nowInside)document.getElementById('fs-return-overlay').classList.remove('show');
+    return;
+  }
   if(finished){
     fsSessionInside=nowInside;
     return;
@@ -1415,16 +1459,17 @@ setInterval(()=>{
       pipPollArmed=false;
       pipViolationCount++;
       saveProgress();
-      showFloatingIntegrityWarning('Floating video detected','A floating / PiP video window is active.');
+      showIntegrityPenaltyOverlay('Floating video detected','A floating / PiP video window is active.<br>This incident has been recorded.',
+        `PiP #${pipViolationCount} · Total integrity penalty: −${totalIntegrityPenaltyPts()} pts`);
     }
   } else pipPollArmed=true;
 },700);
 
-function showFloatingIntegrityWarning(title,msg){
+function showIntegrityPenaltyOverlay(title,msgHtml,countLine){
   document.getElementById('warn-title').textContent=title;
-  document.getElementById('warn-msg').innerHTML=msg+'<br>This incident has been recorded.';
+  document.getElementById('warn-msg').innerHTML=msgHtml;
   document.getElementById('warn-penalty').textContent='−'+INTEGRITY_PENALTY+' penalty points';
-  document.getElementById('warn-count').textContent=`Event #${pipViolationCount} · Total integrity penalty: −${totalIntegrityPenaltyPts()} pts`;
+  document.getElementById('warn-count').textContent=countLine;
   const el=document.getElementById('warn-overlay');
   el.classList.add('show');
   let secs=5;
@@ -1437,6 +1482,56 @@ function showFloatingIntegrityWarning(title,msg){
     else cdEl.textContent=`Auto-closing in ${secs}s`;
   },1000);
 }
+
+function recordScreenshotAttempt(){
+  if(!activityStarted||finished)return;
+  const now=Date.now();
+  if(now<screenshotDebounceUntil)return;
+  screenshotDebounceUntil=now+850;
+  screenshotAttemptCount++;
+  saveProgress();
+  const mobileHint=isMobileExamDevice()
+    ? ' On phones, hardware screenshot buttons usually cannot be detected — the honor policy still applies.'
+    : '';
+  showIntegrityPenaltyOverlay('Screenshot attempt detected',
+    'Screen capture or screenshot shortcuts were detected where possible. This is not allowed during the activity.'+mobileHint+'<br>This incident has been recorded.',
+    `Screenshot #${screenshotAttemptCount} · Total integrity penalty: −${totalIntegrityPenaltyPts()} pts`);
+}
+
+function isPrintScreenKey(e){
+  return e.key==='PrintScreen'||e.code==='PrintScreen'||e.code==='Snapshot';
+}
+function isScreenshotShortcutCombo(e){
+  const k=e.key;
+  if(k==='F13'||k==='F14')return true;
+  if(e.shiftKey&&e.metaKey&&(k==='3'||k==='4'||k==='5'))return true;
+  if(e.shiftKey&&e.metaKey&&(k==='s'||k==='S'))return true;
+  const osMod=e.metaKey||e.getModifierState?.('OS')||e.getModifierState?.('Super');
+  if(e.shiftKey&&osMod&&(k==='s'||k==='S'))return true;
+  if(e.shiftKey&&e.altKey&&(k==='s'||k==='S'))return true;
+  if((e.metaKey||osMod)&&e.altKey&&(k==='p'||k==='P'||e.code==='PrintScreen'))return true;
+  return false;
+}
+document.addEventListener('keydown',e=>{
+  if(!activityStarted||finished)return;
+  if(isPrintScreenKey(e)){
+    e.preventDefault();
+    e.stopPropagation();
+    recordScreenshotAttempt();
+    return;
+  }
+  if(!isScreenshotShortcutCombo(e))return;
+  e.preventDefault();
+  e.stopPropagation();
+  recordScreenshotAttempt();
+},true);
+document.addEventListener('keyup',e=>{
+  if(!activityStarted||finished)return;
+  if(!isPrintScreenKey(e))return;
+  e.preventDefault();
+  e.stopPropagation();
+  recordScreenshotAttempt();
+},true);
 
 // ── TAB-LEAVE ────────────────────────────────────
 function dismissWarning(){
@@ -1472,6 +1567,7 @@ function updateScoreDisplay(){}
 function setPrediction(band){
   predictedBand=band;
   document.getElementById('pred-overlay').classList.remove('show');
+  refreshMobileFullscreenUi();
   tryEnterExamFullscreen();
 }
 
@@ -1587,7 +1683,7 @@ function buildQHTML(q,i){
   else if(q.type==='match')btns+=`<button class="btn btn-pri" id="sub-${i}" onclick="checkMatch(${i})">Submit</button>`;
   btns+=`<button class="btn btn-nxt" id="nxt-${i}" onclick="goTo(${i+1<TOTAL?i+1:i})">${i===TOTAL-1?'':'Next →'}</button></div>`;
   body+=btns;
-  return `<div class="card"><div class="card-bar"><div class="dot d-r"></div><div class="dot d-y"></div><div class="dot d-g"></div><span class="c-file">question_${i+1}.cpp</span><span class="c-type ${tc[q.type]||'t-mc'}">${tl[q.type]||q.type}</span></div><div class="card-body"><div class="q-lbl">Q${i+1} of ${TOTAL} <span class="q-diff ${dc[q.diff]||'diff-med'}">${dl[q.diff]||q.diff}</span></div>${body}</div></div>`;
+  return `<div class="card"><div class="card-bar"><div class="dot d-r"></div><div class="dot d-y"></div><div class="dot d-g"></div><span class="c-file">question_${i+1}</span><span class="c-type ${tc[q.type]||'t-mc'}">${tl[q.type]||q.type}</span></div><div class="card-body"><div class="q-lbl">Q${i+1} of ${TOTAL} <span class="q-diff ${dc[q.diff]||'diff-med'}">${dl[q.diff]||q.diff}</span></div>${body}</div></div>`;
 }
 
 function buildMatchHTML(q,i){
@@ -1704,6 +1800,7 @@ function showResult(){
   document.getElementById('r-tabswitch').textContent=tabLeaveCount;
   document.getElementById('r-fs-exit').textContent=fullscreenExitCount;
   document.getElementById('r-pip').textContent=pipViolationCount;
+  document.getElementById('r-screenshot').textContent=screenshotAttemptCount;
   document.getElementById('r-penalty').textContent='−'+penaltyPts+' pts';
   // Aristotle
   if(predictedBand){
@@ -1929,6 +2026,8 @@ function saveProgress(){
     tabLeaveCount,
     fullscreenExitCount,
     pipViolationCount,
+    screenshotAttemptCount,
+    mobileFullscreenBypass,
     ts:Date.now()
   };
   localStorage.setItem(SAVE_PREFIX+currentUser.id,JSON.stringify(data));
@@ -1959,6 +2058,8 @@ function restoreProgress(id){
     tabLeaveCount=data.tabLeaveCount||0;
     fullscreenExitCount=data.fullscreenExitCount||0;
     pipViolationCount=data.pipViolationCount||0;
+    screenshotAttemptCount=data.screenshotAttemptCount||0;
+    mobileFullscreenBypass=!!data.mobileFullscreenBypass;
     return true;
   }catch(e){return false;}
 }
@@ -1975,6 +2076,7 @@ document.addEventListener('keydown',e=>{
   if(Q[qi].type==='fill')checkFill(qi);
   if(Q[qi].type==='predict')checkPredict(qi);
 });
+refreshMobileFullscreenUi();
 </script>
 </body>
 </html>
