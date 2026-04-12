@@ -667,7 +667,13 @@ document.addEventListener('keydown',e=>{
   if(e.key==='F5'||(e.ctrlKey&&e.key.toLowerCase()==='r'))e.preventDefault();
   if(e.key==='F12')e.preventDefault();
   if(e.ctrlKey&&e.shiftKey&&['i','j','c'].includes(e.key.toLowerCase()))e.preventDefault();
+  // Block select-all and copy during quiz
+  if(activityStarted&&e.ctrlKey&&['a','c','x'].includes(e.key.toLowerCase()))e.preventDefault();
 });
+// Block text selection and copy/cut during quiz
+document.addEventListener('selectstart',e=>{if(activityStarted)e.preventDefault();});
+document.addEventListener('copy',e=>{if(activityStarted)e.preventDefault();});
+document.addEventListener('cut',e=>{if(activityStarted)e.preventDefault();});
 
 // ── DEVTOOLS DETECTION ───────────────────────────
 (function devBlock(){
