@@ -150,6 +150,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .diff-xhard{background:var(--red-dim);color:var(--red);border:1px solid var(--red);}
 .q-text{font-size:14px;font-weight:600;color:var(--text);line-height:1.6;margin-bottom:16px;}
 .q-text code{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;color:var(--amber2);}
+.q-text,.q-lbl,.opt,.card,.screen{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
 .code{background:#080a0f;border:1px solid var(--border2);border-radius:var(--rs);padding:14px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.85;margin-bottom:16px;white-space:pre;overflow-x:auto;}
 .kw{color:#c792ea;}.str{color:#c3e88d;}.num{color:#f78c6c;}.cmt{color:#4a5568;font-style:italic;}
 .fn{color:#82aaff;}.var{color:#eefff9;}.punct{color:#89ddff;}.op{color:#89ddff;}
@@ -518,7 +519,7 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
             <div class="answer-key-unlock">
               <span style="font-size:11px;font-family:var(--mono);color:var(--text3);white-space:nowrap;">🔒 Answer Key</span>
               <input type="password" id="ak-password" placeholder="Enter password to unlock…">
-              <button onclick="unlockAnswerKey()">Unlock</button>
+              <button id="ak-unlock-btn" onclick="unlockAnswerKey()">Unlock</button>
             </div>
             <div class="answer-key-body" id="answer-key-body"></div>
           </div>
@@ -670,8 +671,7 @@ document.addEventListener('keydown',e=>{
   // Block select-all and copy during quiz
   if(activityStarted&&e.ctrlKey&&['a','c','x'].includes(e.key.toLowerCase()))e.preventDefault();
 });
-// Block text selection and copy/cut during quiz
-document.addEventListener('selectstart',e=>{if(activityStarted)e.preventDefault();});
+// Keep clipboard protections without forcing selection/highlight side-effects
 document.addEventListener('copy',e=>{if(activityStarted)e.preventDefault();});
 document.addEventListener('cut',e=>{if(activityStarted)e.preventDefault();});
 
@@ -739,14 +739,6 @@ const ROSTER = {
   "22-11594":"Oyando, Carlos John Ayabas",
   "23-19473":"Padua, Knight Shield Andres",
   "23-19435":"Paltao, Spencer Amboni",
-  "20-01032":"Pooten, John Paul Tengay",
-  "20-01815":"Sanidad, Hazel Kate Dumagay",
-  "20-00980":"Silva, Florich Joy Cortez",
-  "23-19531":"Taluyan, Frederick Moldero Jr.",
-  "23-19441":"Tockiapao, Kenneth Christian Masaway",
-  "23-19455":"Torres, Jowayne Bewog",
-  "23-10077":"Valencia, Jonathan Lorenzo",
-  "21-11123":"Viteño, Nichole Shyne Sanidad",
   "23-19399":"Amador, Jarley Parrocha",
   "23-19394":"Baggas, Hinden Von Picat",
   "23-19495":"Bawing, Jefferson Dacanay",
@@ -773,7 +765,8 @@ const ROSTER = {
   "23-110174":"Padilla, Rainy Von Bayado",
   "21-10834":"Palos, Bonrod Zildian Lumines",
   "23-19435":"Paltao, Spencer Amboni",
-  "10": "Admin",
+  "102": "Admin",
+  "101": "Admin",
 };
 
 
@@ -793,14 +786,15 @@ document.getElementById('login-id').addEventListener('input', () => {
   }
 
   // --- NEW LOCAL STORAGE CHECK (Real-time feedback) ---
-  const savedScore = localStorage.getItem(`cpp_assessment_${id}`);
-  if (savedScore !== null) {
-    document.getElementById('login-id').className = 'login-input err';
-    document.getElementById('login-hint').textContent = `✗ Test already completed. Score: ${savedScore}`;
-    document.getElementById('login-hint').className = 'login-hint err';
-    document.getElementById('login-welcome').style.display = 'none';
-    document.getElementById('login-btn').disabled = true;
-    return; // Stops further checks
+  const savedResult = getSavedResult(id);
+  if (savedResult) {
+    document.getElementById('login-id').className = 'login-input ok';
+    document.getElementById('login-hint').textContent = `✓ Test already completed. Saved score: ${savedResult.finalScore}/${savedResult.total}`;
+    document.getElementById('login-hint').className = 'login-hint ok';
+    document.getElementById('login-welcome').innerHTML = 'Result found for this ID. Click below to view your saved submission.';
+    document.getElementById('login-welcome').style.display = 'block';
+    document.getElementById('login-btn').disabled = false;
+    return;
   }
   // ----------------------------------------------------
 
@@ -826,16 +820,16 @@ function attemptLogin() {
   const name = ROSTER[id];
   if (!name) return;
 
-  const savedScore = localStorage.getItem(`cpp_assessment_${id}`);
-  if (savedScore !== null) {
-    alert("Test already submitted!");
-    return;
-  }
-
   currentUser = { id, name };
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-shell').style.display = 'block';
   document.getElementById('user-tag').textContent = name;
+
+  const savedResult = getSavedResult(id);
+  if (savedResult) {
+    showSavedResult(savedResult);
+    return;
+  }
 
   const resumed = restoreProgress(id);
   if(resumed){
@@ -1808,6 +1802,7 @@ function showResult(){
   document.getElementById('r-pip').textContent=pipViolationCount;
   document.getElementById('r-screenshot').textContent=screenshotAttemptCount;
   document.getElementById('r-penalty').textContent='−'+penaltyPts+' pts';
+  let aristotleSnapshot=null;
   // Aristotle
   if(predictedBand){
     const card=document.getElementById('aristotle-card');
@@ -1823,11 +1818,32 @@ function showResult(){
     document.getElementById('aris-score-val').style.color=scoreColor;
     document.getElementById('aris-quote').textContent='"'+quote+'"';
     card.style.display='block';
+    aristotleSnapshot = {
+      predictedBand,
+      quote,
+      scoreColor
+    };
+  } else {
+    document.getElementById('aristotle-card').style.display='none';
   }
   if(currentUser){
-    // --- NEW LOCAL STORAGE SAVE ---
-    localStorage.setItem(`cpp_assessment_${currentUser.id}`, `${finalScore}/${TOTAL}`);
-    // ------------------------------
+    const completedAtIso = new Date().toISOString();
+    const resultSnapshot = {
+      total: TOTAL,
+      ok,
+      fail,
+      pct,
+      finalScore,
+      penaltyPts,
+      tabLeaveCount,
+      fullscreenExitCount,
+      pipViolationCount,
+      screenshotAttemptCount,
+      qOrder: Q.map(q=>q.id),
+      aristotle: aristotleSnapshot,
+      completedAtIso
+    };
+    localStorage.setItem(`cpp_assessment_${currentUser.id}`, JSON.stringify(resultSnapshot));
     document.getElementById('res-id-card').innerHTML=`<span style="color:var(--text3)">ID:</span> <span class="val">${currentUser.id}</span>&ensp;·&ensp;<span class="val">${currentUser.name}</span>`;
   }
   const now=new Date();
@@ -1841,6 +1857,7 @@ function showResult(){
     rb.appendChild(d);
   });
   // Build answer key (hidden, needs password)
+  resetAnswerKeyLock();
   buildAnswerKey();
 }
 
@@ -1863,13 +1880,60 @@ function buildAnswerKey(){
     body.appendChild(row);
   });
 }
+
+function buildAnswerKeyFromSaved(saved){
+  const body=document.getElementById('answer-key-body');
+  body.innerHTML=`<div class="ak-lbl">Answer Key — ${saved.total || TOTAL} Questions</div>`;
+  if(!saved.qOrder || !Array.isArray(saved.qOrder) || saved.qOrder.length===0){
+    body.innerHTML+=`<div class="ak-row"><span class="ak-num">—</span><span class="ak-title">Answer key data is not available for this saved record.</span><span class="ak-ans">N/A</span></div>`;
+    return;
+  }
+  const idMap={};
+  QBANK.forEach(q=>idMap[q.id]=q);
+  saved.qOrder.forEach((qid,idx)=>{
+    const q=idMap[qid];
+    if(!q){
+      const miss=document.createElement('div');
+      miss.className='ak-row';
+      miss.innerHTML=`<span class="ak-num">Q${idx+1}</span><span class="ak-title">Question record unavailable.</span><span class="ak-ans">N/A</span>`;
+      body.appendChild(miss);
+      return;
+    }
+    const tl={mc:'MC',tf:'TF',scenario:'Scenario',fill:'Fill',predict:'Predict',bug:'Bug',match:'Match'};
+    let ans='';
+    if(q.type==='mc')ans=q.opts[q.correct];
+    else if(q.type==='tf')ans=q.correct?'True':'False';
+    else if(q.type==='scenario')ans=q.opts[q.correct];
+    else if(q.type==='fill')ans=q.answers[0];
+    else if(q.type==='predict')ans=q.answers.join(' | ');
+    else if(q.type==='bug')ans='Line '+q.correctLine;
+    else if(q.type==='match')ans=q.answers.join(' → ');
+    const row=document.createElement('div');
+    row.className='ak-row';
+    row.innerHTML=`<span class="ak-num">Q${idx+1}</span><span class="ak-title">${q.title} <span style="color:var(--text3);font-size:9px;">[${tl[q.type]}]</span></span><span class="ak-ans">${ans}</span>`;
+    body.appendChild(row);
+  });
+}
+
+function resetAnswerKeyLock(){
+  const body=document.getElementById('answer-key-body');
+  const pw=document.getElementById('ak-password');
+  const btn=document.getElementById('ak-unlock-btn');
+  body.classList.remove('show');
+  pw.disabled=false;
+  pw.value='';
+  pw.style.borderColor='';
+  btn.disabled=false;
+  btn.textContent='Unlock';
+}
+
 function unlockAnswerKey(){
-  const pw=document.getElementById('ak-password').value;
+  const pw=document.getElementById('ak-password').value.trim();
   if(pw==='admin1234567890'){
     document.getElementById('answer-key-body').classList.add('show');
     document.getElementById('ak-password').disabled=true;
-    document.querySelector('#answer-key-section button').disabled=true;
-    document.querySelector('#answer-key-section button').textContent='✓ Unlocked';
+    document.getElementById('ak-unlock-btn').disabled=true;
+    document.getElementById('ak-unlock-btn').textContent='✓ Unlocked';
   } else {
     document.getElementById('ak-password').style.borderColor='var(--red)';
     setTimeout(()=>document.getElementById('ak-password').style.borderColor='',1000);
@@ -2023,11 +2087,111 @@ function checkMatch(qi){
 // ── SAVE / RESTORE PROGRESS ──────────────────────
 const SAVE_PREFIX='cpp_progress_';
 
+function getSavedResult(id){
+  const raw = localStorage.getItem(`cpp_assessment_${id}`);
+  if(!raw)return null;
+  try{
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object' && typeof parsed.finalScore === 'number'){
+      const total = parsed.total || TOTAL;
+      const ok = typeof parsed.ok === 'number' ? parsed.ok : Math.max(0, Math.min(total, parsed.finalScore));
+      const fail = typeof parsed.fail === 'number' ? parsed.fail : Math.max(0, total - ok);
+      return {
+        total,
+        ok,
+        fail,
+        pct: typeof parsed.pct === 'number' ? parsed.pct : Math.round(ok/total*100),
+        finalScore: parsed.finalScore,
+        penaltyPts: typeof parsed.penaltyPts === 'number' ? parsed.penaltyPts : 0,
+        tabLeaveCount: parsed.tabLeaveCount || 0,
+        fullscreenExitCount: parsed.fullscreenExitCount || 0,
+        pipViolationCount: parsed.pipViolationCount || 0,
+        screenshotAttemptCount: parsed.screenshotAttemptCount || 0,
+        qOrder: parsed.qOrder || null,
+        aristotle: parsed.aristotle || null,
+        completedAtIso: parsed.completedAtIso || null
+      };
+    }
+  }catch(e){
+    // Backward compatibility for previous "score/total" format
+    const m = /^(-?\d+)\/(\d+)$/.exec(raw.trim());
+    if(m){
+      const finalScore = parseInt(m[1],10);
+      const total = parseInt(m[2],10) || TOTAL;
+      const ok = Math.max(0, Math.min(total, finalScore));
+      return {
+        total,
+        ok,
+        fail: total-ok,
+        pct: Math.round(ok/total*100),
+        finalScore,
+        penaltyPts: 0,
+        tabLeaveCount: 0,
+        fullscreenExitCount: 0,
+        pipViolationCount: 0,
+        screenshotAttemptCount: 0,
+        qOrder: null,
+        aristotle: null,
+        completedAtIso: null
+      };
+    }
+  }
+  return null;
+}
+
+function showSavedResult(saved){
+  finished=true;
+  activityStarted=false;
+  clearInterval(timerIv);
+  updateTimerUI();
+  document.querySelector('.bottom-bar').style.display='none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-it').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-result').classList.add('active');
+  document.getElementById('nav-result-wrap').style.display='block';
+  document.getElementById('res-emoji').textContent=saved.pct>=80?'🎉':saved.pct>=60?'👍':'📝';
+  document.getElementById('r-ok').textContent=saved.ok;
+  document.getElementById('r-fail').textContent=saved.fail;
+  document.getElementById('r-pct').textContent=saved.pct+'%';
+  document.getElementById('r-tabswitch').textContent=saved.tabLeaveCount;
+  document.getElementById('r-fs-exit').textContent=saved.fullscreenExitCount;
+  document.getElementById('r-pip').textContent=saved.pipViolationCount;
+  document.getElementById('r-screenshot').textContent=saved.screenshotAttemptCount;
+  document.getElementById('r-penalty').textContent='−'+saved.penaltyPts+' pts';
+  document.getElementById('res-id-card').innerHTML=`<span style="color:var(--text3)">ID:</span> <span class="val">${currentUser.id}</span>&ensp;·&ensp;<span class="val">${currentUser.name}</span>`;
+  if(saved.completedAtIso){
+    const dt = new Date(saved.completedAtIso);
+    document.getElementById('res-ts').textContent='Submitted: '+dt.toLocaleString('en-PH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } else {
+    document.getElementById('res-ts').textContent='Submitted: previously completed (timestamp unavailable)';
+  }
+  const rb=document.getElementById('review-block');
+  rb.innerHTML='<div class="rev-item ok"><span>✓</span><span>Saved result restored after login.</span></div>';
+  resetAnswerKeyLock();
+  buildAnswerKeyFromSaved(saved);
+  const card=document.getElementById('aristotle-card');
+  if(saved.aristotle){
+    document.getElementById('aris-pred-val').textContent=saved.aristotle.predictedBand || '—';
+    document.getElementById('aris-score-val').textContent=saved.finalScore;
+    document.getElementById('aris-score-val').style.color=saved.aristotle.scoreColor || 'var(--amber)';
+    document.getElementById('aris-quote').textContent='"'+(saved.aristotle.quote || 'Wisdom grows through disciplined practice.')+'"';
+    card.style.display='block';
+  } else {
+    document.getElementById('aris-pred-val').textContent='—';
+    document.getElementById('aris-score-val').textContent=saved.finalScore;
+    document.getElementById('aris-score-val').style.color='var(--amber)';
+    document.getElementById('aris-quote').textContent='"Aristotle insight is unavailable for this older saved result."';
+    card.style.display='block';
+  }
+  exitFullscreenForResults();
+}
+
 function saveProgress(){
   if(!currentUser||finished)return;
   const data={
     qOrder:Q.map(q=>q.id),
     scores:[...scores],
+    predictedBand,
     timerSecs,
     tabLeaveCount,
     fullscreenExitCount,
@@ -2060,6 +2224,7 @@ function restoreProgress(id){
     if(rebuilt.length!==TOTAL)return false;
     Q=rebuilt;
     scores=data.scores;
+    predictedBand=data.predictedBand||null;
     timerSecs=data.timerSecs;
     tabLeaveCount=data.tabLeaveCount||0;
     fullscreenExitCount=data.fullscreenExitCount||0;
