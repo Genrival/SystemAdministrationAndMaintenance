@@ -107,7 +107,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .gtimer-lbl{font-size:10px;color:var(--text3);font-family:var(--mono);}
 
 /* ── LAYOUT ── */
-.layout{display:block;min-height:calc(100vh - 58px - var(--bottombar-h));}
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 58px - var(--bottombar-h));}
 .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:12px 0;overflow-y:auto;max-height:calc(100vh - 58px - var(--bottombar-h));position:sticky;top:58px;}
 .sb-lbl{padding:10px 16px 4px;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-family:var(--mono);}
 .nav-it{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;transition:all .15s;border-left:2px solid transparent;margin:1px 0;}
@@ -446,14 +446,14 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
     <div class="brand">
       <div class="brand-ico">SysAd</div>
       <div>
-        <div class="brand-title">Unit Quiz</div>
-        <div class="brand-sub">Modules 2.2, 2.3 &amp; 3</div>
+        <div class="brand-title">INC - Quiz</div>
+        <div class="brand-sub">Modules 1 -3 </div>
       </div>
     </div>
     <div class="hdr-right">
       <div class="user-tag" id="user-tag"></div>
       <div class="prog-wrap">
-        <span class="prog-lbl" id="prog-lbl">0 / 50</span>
+        <span class="prog-lbl" id="prog-lbl">0 / 100</span>
         <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
       </div>
       <button id="theme-toggle" class="theme-btn" onclick="toggleTheme()">☀️</button>
@@ -467,7 +467,17 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
   </header>
 
   <div class="layout">
-    
+    <aside class="sidebar">
+      <div class="sb-lbl">Questions</div>
+      <div id="nav-root"></div>
+      <div id="nav-result-wrap" style="display:none">
+        <div class="sb-lbl" style="margin-top:8px;">Summary</div>
+        <div class="nav-it" onclick="triggerFinishFlow()">
+          <div class="nav-n" style="background:var(--amber);border-color:var(--amber);color:#0b0d12;font-weight:700;">★</div>
+          <div class="nav-txt">View Results</div>
+        </div>
+      </div>
+    </aside>
     <main class="main">
       <div id="screens-root"></div>
       <div class="screen" id="screen-result">
@@ -476,7 +486,22 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
           <div class="res-title">Unit Quiz Complete!</div>
           <div class="res-sub">Modules 2.2 · 2.3 · 3.1 · 3.2 · 3.3</div>
           <div class="res-id-card" id="res-id-card"></div>
-          
+          <div class="aristotle-card" id="aristotle-card" style="display:none;">
+            <div class="aristotle-vs">
+              <div class="aristotle-vs-box">
+                <div class="aristotle-vs-label">You predicted</div>
+                <div class="aristotle-vs-val" id="aris-pred-val" style="color:var(--blue)">—</div>
+              </div>
+              <div class="aristotle-vs-sep">vs</div>
+              <div class="aristotle-vs-box">
+                <div class="aristotle-vs-label">You scored</div>
+                <div class="aristotle-vs-val" id="aris-score-val">0</div>
+              </div>
+            </div>
+            <div class="aristotle-bust">🏛️</div>
+            <div class="aristotle-quote" id="aris-quote"></div>
+            <div class="aristotle-attr">— Aristotle</div>
+          </div>
           <div class="res-ts" id="res-ts"></div>
           <div class="res-stats">
             <div class="res-stat"><div class="res-sv c-ok" id="r-ok">0</div><div class="res-sl">Correct</div></div>
@@ -565,21 +590,21 @@ code,.code-block,pre,span,body,p,div,li,td,th,label,button{font-variant-ligature
     <div class="pred-title">Before you begin…</div>
     <div class="pred-sub">What score do you honestly expect to get?<br>This is just for you — be truthful.</div>
     <div class="pred-opts">
-      <div class="pred-opt" onclick="setPrediction('46-50')">
+      <div class="pred-opt" onclick="setPrediction('90-100')">
         <span class="pred-opt-emoji">🎯</span>
-        <div><div class="pred-opt-label">46 – 50</div><div class="pred-opt-sub">"I've got this. I'm fully prepared."</div></div>
+        <div><div class="pred-opt-label">90 – 100</div><div class="pred-opt-sub">"I've got this. I'm fully prepared."</div></div>
       </div>
-      <div class="pred-opt" onclick="setPrediction('35-45')">
+      <div class="pred-opt" onclick="setPrediction('75-89')">
         <span class="pred-opt-emoji">💪</span>
-        <div><div class="pred-opt-label">35 – 45</div><div class="pred-opt-sub">"Feeling confident, might slip on a few."</div></div>
+        <div><div class="pred-opt-label">75 – 89</div><div class="pred-opt-sub">"Feeling confident, might slip on a few."</div></div>
       </div>
-      <div class="pred-opt" onclick="setPrediction('25-34')">
+      <div class="pred-opt" onclick="setPrediction('50-74')">
         <span class="pred-opt-emoji">🤔</span>
-        <div><div class="pred-opt-label">25 – 34</div><div class="pred-opt-sub">"I'll try my best."</div></div>
+        <div><div class="pred-opt-label">50 – 74</div><div class="pred-opt-sub">"I'll try my best."</div></div>
       </div>
-      <div class="pred-opt" onclick="setPrediction('0-24')">
+      <div class="pred-opt" onclick="setPrediction('0-49')">
         <span class="pred-opt-emoji">😅</span>
-        <div><div class="pred-opt-label">0 – 24</div><div class="pred-opt-sub">"Just going for it."</div></div>
+        <div><div class="pred-opt-label">0 – 49</div><div class="pred-opt-sub">"Just going for it."</div></div>
       </div>
     </div>
   </div>
@@ -686,63 +711,66 @@ document.addEventListener('touchmove',e=>{
 
 // ── ROSTER ──────────────────────────────────────
 const ROSTER = {
-  "23-19846":"Abindan, Rendell Manigway",
-  "23-19454":"Aduca, Ruel Arnold",
-  "23-110813":"Aromin, Kervy Caranguian",
-  "23-110078":"Balansi, Aiza Coom",
-  "24-113818":"Balbuena, Jovi Martinez",
-  "23-19854":"Baliaga, Naya Camille Dawiguey",
-  "23-19374":"Balitnang, Gean Baswit",
-  "23-110414":"Binaraba, Jhon Rey Tuccalay",
-  "22-11633":"Bonifacio, Brent Charles Ramos",
-  "23-110192":"Caldito, Henyce Jean Bermudez",
-  "23-19526":"Dacnas, Irish Cañete",
-  "22-10430":"Dawaton, John Rey Liaban",
-  "23-110208":"Dela Cueva, Crystel Mae Carbonel",
-  "23-19465":"Dela Cueva, Janelle Anne Carbonel",
-  "23-110186":"Duritan, Shaila Malaga",
-  "23-19853":"Fernandez, Jelly Grail Lambayong",
-  "23-110194":"Fernandez, Jezreel Sacayle",
-  "23-19929":"Ladwingon, Shaina Dalutag",
-  "23-110004":"Lingayo, Karyle Jane Senica",
-  "23-19848":"Linggayo, Sherylyn Dawig",
-  "16-10278":"Magayam, Josiah Ira Dauz",
-  "07-08059":"Mendoza, Ordilyn Ganggangan",
-  "23-110170":"Mundo, Krisha-mae Lumboy",
-  "23-19458":"Oclit, Jaycel Wandagan",
-  "23-110236":"Ottao, Perseus Jeshua Sulca",
-  "22-11594":"Oyando, Carlos John Ayabas",
-  "23-19473":"Padua, Knight Shield Andres",
-  "23-19435":"Paltao, Spencer Amboni",
-  "23-19399":"Amador, Jarley Parrocha",
-  "23-19394":"Baggas, Hinden Von Picat",
-  "23-19495":"Bawing, Jefferson Dacanay",
-  "23-19400":"Bayangan, Van Riddick Rebancos",
-  "23-211239":"Boog, Van Rutherford Lao-aten",
-  "23-19395":"Bucao, Rodneil Macar",
-  "22-10404":"Carbonell, Rexton Masaway",
-  "22-10731":"Cera, Chansai Agustin",
-  "23-19457":"Dang-as, Carl Vincent Hemoya",
-  "23-19433":"Dela Cruz, Hanz Gabriel Cardosa",
-  "23-19350":"Delarna, Messiah Gumpad",
-  "20-02370":"Devalde, Johnwayne Gayyed",
-  "21-12340":"Eyawa, Noel Sagmayao",
-  "23-19440":"Feliciano, Skyla Olino",
-  "23-19385":"Fontanilla, Benjie Balintaculo",
-  "21-10855":"Gazzingan, Estela Mariz Pattung",
-  "23-19363":"Gonzales, Jolly Jane Mudlong",
-  "23-19370":"Guron, Jay-ann Manzano",
-  "22-10854":"Itay, Kingster Gonayon",
-  "20-20391":"Jiminez, Jhon Rey Bawit",
-  "23-19529":"Lacwasan, Ritcher Bulante",
-  "23-08693":"Laed, James Michael Gao-ay",
-  "23-110170":"Mundo, Krisha-mae Lumboy",
-  "23-110174":"Padilla, Rainy Von Bayado",
-  "21-10834":"Palos, Bonrod Zildian Lumines",
-  "23-19435":"Paltao, Spencer Amboni",
-  "105": "Admin",
-  "104": "Admin",
-  "103":"Admin",
+  "023-19846":"Abindan, Rendell Manigway",
+  "023-19454":"Aduca, Ruel Arnold",
+  "023-110813":"Aromin, Kervy Caranguian",
+  "023-110078":"Balansi, Aiza Coom",
+  "024-113818":"Balbuena, Jovi Martinez",
+  "023-19854":"Baliaga, Naya Camille Dawiguey",
+  "023-19374":"Balitnang, Gean Baswit",
+  "023-110414":"Binaraba, Jhon Rey Tuccalay",
+  "022-11633":"Bonifacio, Brent Charles Ramos",
+  "023-110192":"Caldito, Henyce Jean Bermudez",
+  "023-19526":"Dacnas, Irish Cañete",
+  "022-10430":"Dawaton, John Rey Liaban",
+  "023-110208":"Dela Cueva, Crystel Mae Carbonel",
+  "023-19465":"Dela Cueva, Janelle Anne Carbonel",
+  "023-110186":"Duritan, Shaila Malaga",
+  "023-19853":"Fernandez, Jelly Grail Lambayong",
+  "023-110194":"Fernandez, Jezreel Sacayle",
+  "023-19929":"Ladwingon, Shaina Dalutag",
+  "023-110004":"Lingayo, Karyle Jane Senica",
+  "023-19848":"Linggayo, Sherylyn Dawig",
+  "016-10278":"Magayam, Josiah Ira Dauz",
+  "007-08059":"Mendoza, Ordilyn Ganggangan",
+  "023-110170":"Mundo, Krisha-mae Lumboy",
+  "023-19458":"Oclit, Jaycel Wandagan",
+  "023-110236":"Ottao, Perseus Jeshua Sulca",
+  "022-11594":"Oyando, Carlos John Ayabas",
+  "023-19473":"Padua, Knight Shield Andres",
+  "023-19435":"Paltao, Spencer Amboni",
+  "023-19399":"Amador, Jarley Parrocha",
+  "023-19394":"Baggas, Hinden Von Picat",
+  "023-19495":"Bawing, Jefferson Dacanay",
+  "023-19400":"Bayangan, Van Riddick Rebancos",
+  "023-211239":"Boog, Van Rutherford Lao-aten",
+  "023-19395":"Bucao, Rodneil Macar",
+  "022-10404":"Carbonell, Rexton Masaway",
+  "022-10731":"Cera, Chansai Agustin",
+  "023-19457":"Dang-as, Carl Vincent Hemoya",
+  "023-19433":"Dela Cruz, Hanz Gabriel Cardosa",
+  "023-19350":"Delarna, Messiah Gumpad",
+  "020-02370":"Devalde, Johnwayne Gayyed",
+  "021-12340":"Eyawa, Noel Sagmayao",
+  "023-19440":"Feliciano, Skyla Olino",
+  "023-19385":"Fontanilla, Benjie Balintaculo",
+  "021-10855":"Gazzingan, Estela Mariz Pattung",
+  "023-19363":"Gonzales, Jolly Jane Mudlong",
+  "023-19370":"Guron, Jay-ann Manzano",
+  "022-10854":"Itay, Kingster Gonayon",
+  "020-20391":"Jiminez, Jhon Rey Bawit",
+  "023-19529":"Lacwasan, Ritcher Bulante",
+  "023-08693":"Laed, James Michael Gao-ay",
+  "023-110170":"Mundo, Krisha-mae Lumboy",
+  "023-110174":"Padilla, Rainy Von Bayado",
+  "021-10834":"Palos, Bonrod Zildian Lumines",
+  "023-19435":"Paltao, Spencer Amboni",
+  "0102": "Admin",
+  "0105": "Admin",
+  "0106": "Admin",
+  "0107": "Admin",
+  "0108": "Admin",
+  "0109": "Admin",
 };
 
 
@@ -779,7 +807,7 @@ document.getElementById('login-id').addEventListener('input', () => {
     document.getElementById('login-id').className = 'login-input ok';
     document.getElementById('login-hint').textContent = '✓ ID recognized';
     document.getElementById('login-hint').className = 'login-hint ok';
-    document.getElementById('login-welcome').innerHTML = `Welcome, 👤<strong>${name}</strong>!<br>Topic: Updates, Monitoring &amp; Network Mgmt; 50 questions &nbsp;·&nbsp; 60 min`;
+    document.getElementById('login-welcome').innerHTML = `Welcome, 👤<strong>${name}</strong>!<br>Topic: Module 1 - Module 3; 100 questions &nbsp;·&nbsp; 60 min`;
     document.getElementById('login-welcome').style.display = 'block';
     document.getElementById('login-btn').disabled = false;
   } else {
@@ -890,436 +918,681 @@ function forceFinish(){
 // ── QUESTION BANK ─────────────────────────────────
 const QBANK = [
 //═══════════════════════════════════════
-// LESSON 2.2 — APPLYING UPDATES & PATCHES (Q1–17)
-// HARD (MC/SCENARIO → FILL/MATCH)
+// MODULE 1, 2 & 3 — QUIZ ITEMS (Q0–24)
+// MIXED DIFFICULTY (FILL & TF ONLY)
 //═══════════════════════════════════════
-{id:0,title:'Patch management — definition',type:'fill',diff:'hard',
- q:'Patch management is best described as a continuous lifecycle involving vulnerability identification, patch acquisition, validation, risk-based ___, and controlled deployment.',
- ph:'one word...',answers:['prioritization','prioritisation'],
- fb_ok:'✓ Correct — prioritization is key in patch lifecycle decisions.',
- fb_fail:'✗ The missing concept is prioritization — deciding which patches to apply first based on risk.'},
 
-{id:1,title:'Vulnerability gap',type:'tf',diff:'hard',
- q:'Most real-world system compromises occur due to zero-day vulnerabilities rather than unpatched known vulnerabilities.',
- correct:false,
- fb_ok:'✓ Correct. Most attacks exploit known vulnerabilities that already have patches but were not applied.',
- fb_fail:'✗ Incorrect. The majority of breaches exploit known vulnerabilities, not zero-days.'},
+  {id:0,title:'User Account — definition',type:'fill',diff:'easy',
+   q:'A user account is a digital ___ that allows an individual to log in to a computer system, network, or application.',
+   ph:'one word...',answers:['identity'],
+   fb_ok:'✓ Correct — an account provides a digital identity.',
+   fb_fail:'✗ The missing word is identity.'},
 
-{id:2,title:'Vulnerability remediation — steps',type:'match',diff:'hard',
- q:'Match each remediation phase with its MOST accurate operational description.',
- chips:['Identification','Localization','Patch Preparation','Switching (Deployment)'],
- dropDescs:[
-   'Correlating scanner output with asset inventory to pinpoint affected systems',
-   'Executing controlled rollout with rollback strategy and change management approval',
-   'Discovering vulnerabilities through automated or manual assessment tools',
-   'Validating patch integrity, testing in staging, and confirming no regression impact'
- ],
- answers:['Identification','Localization','Patch Preparation','Switching (Deployment)'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Identify → Localize → Prepare/Test → Deploy.'},
+  {id:1,title:'Account Types — Standard vs Admin',type:'tf',diff:'easy',
+   q:'A Standard User Account has full control over the system and can modify core configurations.',
+   correct:false,
+   fb_ok:'✓ Correct. Standard accounts have limited access; Administrator accounts have full control.',
+   fb_fail:'✗ Incorrect. Only Administrator accounts have full control.'},
 
-{id:3,title:'Hot-patching — purpose',type:'fill',diff:'hard',
- q:'Hot-patching allows updates to be applied without requiring a system ___, making it critical for high-availability systems.',
- ph:'one word...',answers:['reboot','restart'],
- fb_ok:'✓ Correct — no reboot is the key advantage.',
- fb_fail:'✗ Hot-patching eliminates the need for reboot.'},
+  {id:2,title:'Service Account — purpose',type:'fill',diff:'medium',
+   q:'A ___ account is specifically used by applications and background processes rather than human users.',
+   ph:'one word...',answers:['service','Service'],
+   fb_ok:'✓ Correct — service accounts run background applications.',
+   fb_fail:'✗ The correct answer is service.'},
 
-{id:4,title:'Hot-patch tools',type:'fill',diff:'hard',
- q:'The Linux tool that enables live kernel patching without reboot is called ___.',
- ph:'tool name...',answers:['Ksplice','ksplice'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Ksplice is the correct tool.'},
+  {id:3,title:'Linux Permissions — execute requirement',type:'tf',diff:'hard',
+   q:'In Linux, a directory can be accessed as long as it has read permission, even if the execute permission is missing.',
+   correct:false,
+   fb_ok:'✓ Correct. A directory MUST have execute (x) permission to be accessed.',
+   fb_fail:'✗ Incorrect. A directory must have execute (x) permission to be accessed.'},
 
-{id:5,title:'CVSS score range',type:'fill',diff:'hard',
- q:'The CVSS v3.x scoring system defines severity up to a maximum value of ___.',
- ph:'...',answers:['10.0','10'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Maximum is 10.0.'},
+  {id:4,title:'Linux Permissions — user categories',type:'fill',diff:'medium',
+   q:'In Linux permission representation, the three user categories are Owner, ___, and Others.',
+   ph:'one word...',answers:['Group','group'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The missing category is Group.'},
 
-{id:6,title:'Patch prioritization — scenario',type:'fill',diff:'hard',
- q:'Given two systems with equal CVSS scores, the one exposed to the internet should be prioritized due to higher attack ___.',
- ph:'one word...',answers:['surface','exposure','risk'],
- fb_ok:'✓ Correct — exposure/attack surface determines priority.',
- fb_fail:'✗ External exposure increases attack surface and risk.'},
+  {id:5,title:'NTFS Permissions — granularity',type:'tf',diff:'medium',
+   q:'Windows uses NTFS permissions, which provide less granular control compared to Linux R-W-X permissions.',
+   correct:false,
+   fb_ok:'✓ Correct. NTFS permissions are considered MORE granular than Linux R-W-X.',
+   fb_fail:'✗ Incorrect. NTFS is actually more granular than standard Linux permissions.'},
 
-{id:7,title:'Patch Tuesday',type:'tf',diff:'hard',
- q:'Out-of-Band patches are typically deferred to align with Patch Tuesday to maintain operational stability.',
- correct:false,
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Out-of-Band patches are immediate.'},
+  {id:6,title:'NTFS Permissions — Allow vs Deny',type:'fill',diff:'hard',
+   q:'In Windows NTFS, if a user inherits both Allow and Deny permissions for a folder, the ___ permission will override the other.',
+   ph:'one word...',answers:['Deny','deny'],
+   fb_ok:'✓ Correct — Deny permissions always override Allow.',
+   fb_fail:'✗ The correct answer is Deny.'},
 
-{id:8,title:'Staging environment',type:'fill',diff:'hard',
- q:'A staging environment is an exact ___ of production used for safe testing before deployment.',
- ph:'one word...',answers:['replica','copy','mirror'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ It must replicate production.'},
+  {id:7,title:'RBAC — definition',type:'fill',diff:'medium',
+   q:'RBAC stands for ___-Based Access Control, which assigns permissions based on a user\'s job function.',
+   ph:'one word...',answers:['Role','role'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct word is Role.'},
 
-{id:9,title:'Soak test duration',type:'fill',diff:'hard',
- q:'A soak test helps detect ___ or intermittent failures after patching.',
- ph:'one word...',answers:['delayed','latent'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Soak tests catch delayed issues.'},
+  {id:8,title:'Two-Factor Authentication — factors',type:'fill',diff:'medium',
+   q:'Two-Factor Authentication combines something you know, like a password, with something you ___, like a smartphone or token.',
+   ph:'one word...',answers:['have'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The missing word is "have".'},
 
-{id:10,title:'Snapshot vs backup',type:'tf',diff:'hard',
- q:'In virtualized environments, snapshots are preferred over full backups before patching because they allow rapid state restoration with minimal downtime.',
- correct:true,
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Snapshots allow fast rollback.'},
+  {id:9,title:'Security — least privilege',type:'tf',diff:'medium',
+   q:'The principle of least privilege states that users should be given exactly the permissions they need to perform their jobs, and no more.',
+   correct:true,
+   fb_ok:'✓ Correct. This minimizes security risks if an account is compromised.',
+   fb_fail:'✗ Incorrect. Giving minimal necessary permissions is the core of this principle.'},
 
-{id:11,title:'Backup golden rule',type:'fill',diff:'hard',
- q:'A “Golden State” backup must be fully ___ before patch deployment to ensure it can be restored.',
- ph:'one word...',answers:['verified','tested'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Backups must be verified/tested.'},
+  {id:10,title:'Security — account lockout',type:'fill',diff:'hard',
+   q:'Account lockout policies prevent ___-force attacks by temporarily locking an account after multiple failed login attempts.',
+   ph:'one word...',answers:['brute','bruteforce'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct word is brute (as in brute-force).'},
 
-{id:12,title:'WSUS function',type:'fill',diff:'hard',
- q:'Centralized Windows patch management is handled by ___.',
- ph:'...',answers:['WSUS'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ WSUS is correct.'},
+  {id:11,title:'Windows OS — evolution',type:'fill',diff:'medium',
+   q:'Windows 10 introduced the concept of Windows as a ___, providing continuous updates instead of major new releases.',
+   ph:'one word...',answers:['Service','service'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct answer is Service.'},
 
-{id:13,title:'Automation tools',type:'fill',diff:'hard',
- q:'Infrastructure-as-code patch automation using playbooks is commonly implemented using ___.',
- ph:'...',answers:['Ansible','ansible'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Ansible is correct.'},
+  {id:12,title:'Windows 11 — TPM requirement',type:'tf',diff:'medium',
+   q:'Windows 11 strictly requires a hardware or firmware security feature known as TPM 2.0 to be installed or enabled.',
+   correct:true,
+   fb_ok:'✓ Correct. TPM 2.0 is a strict requirement for Windows 11.',
+   fb_fail:'✗ Incorrect. Windows 11 does indeed require TPM 2.0 for security.'},
 
-{id:14,title:'UAT in patching',type:'tf',diff:'hard',
- q:'User Acceptance Testing ensures patches do not break real-world workflows by involving actual users.',
- correct:true,
- fb_ok:'✓ Correct.',
- fb_fail:'✗ UAT validates user workflows.'},
+  {id:13,title:'TPM — functionality',type:'fill',diff:'hard',
+   q:'If you use BitLocker, the secret ___ used to unlock your hard drive is securely stored inside the TPM chip rather than the drive itself.',
+   ph:'one word...',answers:['key','password'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct word is key.'},
 
-{id:15,title:'Off-site backup rationale',type:'fill',diff:'hard',
- q:'Backups must be stored off-site to avoid a single point of ___ in case of hardware failure.',
- ph:'two words...',answers:['failure','single point of failure'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Same-location backups create a single point of failure.'},
+  {id:14,title:'NT Kernel — HAL',type:'fill',diff:'hard',
+   q:'The special layer of code in the NT Kernel that hides hardware differences and translates instructions is called the ___.',
+   ph:'acronym...',answers:['HAL','hal'],
+   fb_ok:'✓ Correct — it stands for Hardware Abstraction Layer.',
+   fb_fail:'✗ The correct acronym is HAL.'},
 
-{id:16,title:'Regression bug',type:'fill',diff:'hard',
- q:'A regression bug occurs when a patch unintentionally ___ existing functionality.',
- ph:'...',answers:['breaks'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Regression breaks working features.'},
+  {id:15,title:'NT Kernel — Virtual Memory',type:'tf',diff:'hard',
+   q:'The NT kernel uses Virtual Memory to make applications think they have more RAM than they actually do by using the hard drive as temporary storage.',
+   correct:true,
+   fb_ok:'✓ Correct. This is a core function of the kernel\'s memory management.',
+   fb_fail:'✗ Incorrect. The kernel does use the hard drive for virtual memory swapping.'},
 
+  {id:16,title:'NT Kernel — User Mode',type:'fill',diff:'medium',
+   q:'In the NT architecture, apps run in ___ Mode, which has restricted access to protect the system from crashes.',
+   ph:'one word...',answers:['User','user'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ Apps run in User Mode.'},
+
+  {id:17,title:'OS Installation — Clean Install',type:'fill',diff:'medium',
+   q:'A ___ installation of Windows removes all previous files and applications, installing the operating system from scratch.',
+   ph:'one word...',answers:['Clean','clean'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct term is "Clean" installation.'},
+
+  {id:18,title:'OS Installation — Driver Order',type:'tf',diff:'hard',
+   q:'When installing drivers after an OS installation, the Graphics (GPU) driver must always be installed before the Chipset driver.',
+   correct:false,
+   fb_ok:'✓ Correct. The Chipset driver should be installed first to set the foundation for the motherboard.',
+   fb_fail:'✗ Incorrect. The "Golden Rule" says the Chipset must be installed first.'},
+
+  {id:19,title:'Server Monitoring — Throughput',type:'fill',diff:'hard',
+   q:'In server monitoring, the rate at which requests are serviced is known as ___.',
+   ph:'one word...',answers:['Throughput','throughput'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct term is Throughput.'},
+
+  {id:20,title:'Server Monitoring — ICMP (Ping)',type:'tf',diff:'medium',
+   q:'ICMP (Ping) monitoring guarantees that a web server is functioning perfectly for users as long as the server returns an Echo Reply.',
+   correct:false,
+   fb_ok:'✓ Correct. Ping only checks reachability at the network layer; the web service software could still be crashed.',
+   fb_fail:'✗ Incorrect. A successful ping only means the network stack is up, not that the application is working.'},
+
+  {id:21,title:'Network Devices — Router Layer',type:'fill',diff:'medium',
+   q:'While a switch operates at Layer 2 of the network model, a ___ operates at Layer 3.',
+   ph:'one word...',answers:['router','Router'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct device is a router.'},
+
+  {id:22,title:'Network Configuration — VLANs',type:'fill',diff:'hard',
+   q:'To improve security and reduce broadcast traffic, administrators group switch ports into separate virtual networks called ___.',
+   ph:'acronym (plural)...',answers:['VLANs','vlans','VLAN'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct acronym is VLANs (Virtual Local Area Networks).'},
+
+  {id:23,title:'Network Configuration — Firewalls',type:'tf',diff:'easy',
+   q:'Firewalls control incoming and outgoing network traffic based on predefined security rules.',
+   correct:true,
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ Incorrect. Controlling traffic based on security rules is the exact definition of a firewall.'},
+
+  {id:24,title:'Network Troubleshooting — Methodology',type:'fill',diff:'hard',
+   q:'The troubleshooting methodology that starts from the physical layer and moves upward is called the ___-Up approach.',
+   ph:'one word...',answers:['Bottom','bottom'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct term is Bottom-Up.'},
+   // MODULE 1, 2 & 3 — QUIZ ITEMS (Q25–49)
+// DIFFICULTY: HARD & EXTREME (FILL & TF ONLY)
 //═══════════════════════════════════════
-// LESSON 2.3 — MONITORING SERVER PERFORMANCE (Q17–25)
-// HARD (MC/SCENARIO → FILL/MATCH)
+
+  {id:25,title:'Linux Permissions — File Type',type:'fill',diff:'extreme',
+   q:'In the permission representation "-rwxr-xr--", the very first hyphen indicates that the item is a ___ file.',
+   ph:'one word...',answers:['regular'],
+   fb_ok:'✓ Correct — a hyphen in the first position indicates a regular file.',
+   fb_fail:'✗ The correct answer is regular.'},
+
+  {id:26,title:'NTFS Permissions — Inheritance',type:'fill',diff:'hard',
+   q:'Administrators can Allow, Block, and ___ inherited NTFS permissions depending on folder requirements.',
+   ph:'one word...',answers:['Override','override'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ Administrators can Override inherited permissions.'},
+
+  {id:27,title:'Windows 11 Security — fTPM',type:'fill',diff:'extreme',
+   q:'A virtual TPM embedded within a CPU\'s security environment is technically referred to as a ___ TPM.',
+   ph:'acronym...',answers:['fTPM','ftpm','firmware'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct term is fTPM (Firmware TPM).'},
+
+  {id:28,title:'DirectX 12 feature',type:'tf',diff:'extreme',
+   q:'Windows 11 requires a graphics card to support every single advanced DirectX 12 feature, not just the basic feature level.',
+   correct:false,
+   fb_ok:'✓ Correct. It only requires the card to speak the basic DX12 language (Feature Level).',
+   fb_fail:'✗ Incorrect. Windows 11 only requires basic DirectX 12 Feature Level support, not all advanced tricks.'},
+
+  {id:29,title:'WDDM 2.0 limitation',type:'tf',diff:'hard',
+   q:'If a system is running an older WDDM 1.x driver, the Windows Task Manager will still show GPU utilization graphs for 3D and Video Encode.',
+   correct:false,
+   fb_ok:'✓ Correct. WDDM 2.0 is required for those graphs to appear in Task Manager.',
+   fb_fail:'✗ Incorrect. Older WDDM 1.x drivers do not support showing these detailed GPU graphs.'},
+
+  {id:30,title:'NT Kernel — Process Scheduling',type:'fill',diff:'extreme',
+   q:'The NT kernel creates the illusion of multitasking by allocating CPU usage to applications in increments of a few ___.',
+   ph:'one word...',answers:['milliseconds','ms'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The kernel schedules CPU time in milliseconds.'},
+
+  {id:31,title:'NT Kernel — Stability',type:'tf',diff:'hard',
+   q:'Because of the NT Kernel architecture, if an application crashes in Kernel Mode, the operating system can simply close it without shutting down the computer.',
+   correct:false,
+   fb_ok:'✓ Correct. Applications run in User Mode; a crash in Kernel Mode would bring down the entire system.',
+   fb_fail:'✗ Incorrect. Apps run in User Mode. If something crashes in Kernel Mode, the whole system halts.'},
+
+  {id:32,title:'Vulnerability Remediation — Switching',type:'fill',diff:'extreme',
+   q:'The four-step vulnerability remediation cycle consists of identification, localization, patch preparation, and ___.',
+   ph:'one word...',answers:['switching','Switching'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The final step is switching.'},
+
+  {id:33,title:'Patch Automation — Reporting',type:'tf',diff:'hard',
+   q:'Automation tools like Ansible provide centralized dashboards but cannot show which specific servers succeeded or failed during a mass update.',
+   correct:false,
+   fb_ok:'✓ Correct. Automation tools provide dashboards showing the exact success/failure status of each server.',
+   fb_fail:'✗ Incorrect. They explicitly provide centralized reporting showing exactly which servers succeeded and failed.'},
+
+  {id:34,title:'Throughput Saturation',type:'fill',diff:'extreme',
+   q:'If a server\'s throughput increases while latency simultaneously spikes, it indicates that the server is reaching its ___ point.',
+   ph:'one word...',answers:['Saturation','saturation'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct term is Saturation.'},
+
+  {id:35,title:'Latency vs Response Time',type:'tf',diff:'extreme',
+   q:'Latency and Response Time are identical metrics; both measure the total time from the client\'s request to the final completion of the server\'s reply.',
+   correct:false,
+   fb_ok:'✓ Correct. Latency is the wait time before processing begins, while Response Time is the total completion time.',
+   fb_fail:'✗ Incorrect. Latency is the wait time before handling, whereas Response Time is the total processing time.'},
+
+  {id:36,title:'Server Metrics — P95',type:'fill',diff:'extreme',
+   q:'To identify long-tail delays, administrators look at the 95th ___, which represents the response time that 95% of users experience.',
+   ph:'one word...',answers:['Percentile','percentile'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The specific term is Percentile.'},
+
+  {id:37,title:'Server Metrics — TTFB',type:'fill',diff:'hard',
+   q:'The specific latency metric measuring how long a server takes to start sending data back after receiving a request is abbreviated as ___.',
+   ph:'acronym...',answers:['TTFB','ttfb'],
+   fb_ok:'✓ Correct — Time to First Byte.',
+   fb_fail:'✗ The acronym is TTFB (Time to First Byte).'},
+
+  {id:38,title:'Server Metrics — CPU Steal',type:'fill',diff:'extreme',
+   q:'In cloud environments, CPU ___ occurs when the physical host reallocates resources away from your virtual server.',
+   ph:'one word...',answers:['Steal','steal'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The term is Steal.'},
+
+  {id:39,title:'Server Metrics — Swapping',type:'fill',diff:'hard',
+   q:'When a server\'s RAM is 100% full, it begins ___ data to the hard drive, resulting in a severe performance crash.',
+   ph:'one word...',answers:['swapping','Swapping'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct term is swapping.'},
+
+  {id:40,title:'Server Metrics — I/O Wait',type:'tf',diff:'extreme',
+   q:'High "I/O Wait" indicates that the CPU is overworked and cannot process data fast enough for the hard drive.',
+   correct:false,
+   fb_ok:'✓ Correct. High I/O wait actually means the CPU is sitting idle waiting for a slow hard drive to respond.',
+   fb_fail:'✗ Incorrect. It means the CPU is IDLE waiting for the slow hard drive to keep up.'},
+
+  {id:41,title:'Server Errors — Partial Failure',type:'fill',diff:'extreme',
+   q:'A situation where a server maintains 100% uptime but actively returns a 10% error rate to users is classified as a ___ Failure.',
+   ph:'one word...',answers:['Partial','partial'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The term is Partial Failure.'},
+
+  {id:42,title:'SNMP — Dictionary',type:'fill',diff:'extreme',
+   q:'In SNMP monitoring, the "dictionary" of monitorable hardware data is known by the acronym ___.',
+   ph:'acronym...',answers:['MIB','mib'],
+   fb_ok:'✓ Correct — Management Information Base.',
+   fb_fail:'✗ The correct acronym is MIB.'},
+
+  {id:43,title:'SNMP — Addressing',type:'fill',diff:'extreme',
+   q:'In SNMP\'s Management Information Base, each specific piece of data, such as Fan Speed, is assigned an address called an ___.',
+   ph:'acronym...',answers:['OID','oid'],
+   fb_ok:'✓ Correct — Object Identifier.',
+   fb_fail:'✗ The acronym is OID (Object Identifier).'},
+
+  {id:44,title:'SNMP — Polling vs Traps',type:'tf',diff:'extreme',
+   q:'In SNMP, Traps are sent by the server to the management station at regular 5-minute intervals, while Polling is sent only when an alert occurs.',
+   correct:false,
+   fb_ok:'✓ Correct. Traps are sent only on an alert, whereas Polling is done at regular intervals.',
+   fb_fail:'✗ Incorrect. The definitions are reversed. Traps are triggered by events; Polling is periodic.'},
+
+  {id:45,title:'Agent-Based Monitoring',type:'tf',diff:'hard',
+   q:'Agent-based monitoring relies solely on external pings and does not require installing any software inside the server\'s operating system.',
+   correct:false,
+   fb_ok:'✓ Correct. Agent-based monitoring requires installing a lightweight software agent directly inside the OS.',
+   fb_fail:'✗ Incorrect. Agent-based monitoring specifically requires installing software (an agent) on the server.'},
+
+  {id:46,title:'Network Layers — Transport',type:'fill',diff:'extreme',
+   q:'In the five-layer network analogy, the ___ layer ensures the delivery driver knows how to knock on the door to announce the package arrival.',
+   ph:'one word...',answers:['transport','Transport'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct answer is the transport layer.'},
+
+  {id:47,title:'Switch vs Router routing',type:'tf',diff:'extreme',
+   q:'A switch inspects Ethernet data to determine local forwarding, while a router inspects IP data to determine paths across independent networks.',
+   correct:true,
+   fb_ok:'✓ Correct. Switches use Layer 2 (Ethernet/MAC), and routers use Layer 3 (IP).',
+   fb_fail:'✗ Incorrect. This statement accurately describes how switches and routers inspect data.'},
+
+  {id:48,title:'Network Troubleshooting — Top-Down',type:'fill',diff:'extreme',
+   q:'The network troubleshooting methodology that begins at the application layer and works its way downward is called the ___-Down approach.',
+   ph:'one word...',answers:['Top','top'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The correct word is Top.'},
+
+  {id:49,title:'Network Troubleshooting — Traceroute',type:'fill',diff:'hard',
+   q:'While Ping tests basic connectivity, ___ is the diagnostic tool used to show the exact path packets take to reach a destination.',
+   ph:'one word...',answers:['Traceroute','traceroute'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The diagnostic tool is Traceroute.'},
+// MODULE 1, 2 & 3 — QUIZ ITEMS (Q50–74)
+// DIFFICULTY: EXTREME (FILL & TF ONLY)
 //═══════════════════════════════════════
-{id:17,title:'Core monitoring metrics',type:'match',diff:'hard',
- q:'Match each metric with its meaning.',
- chips:['Throughput','Latency','Resource Utilization','Error Rate'],
- dropDescs:[
-   'Percentage of failed responses',
-   'Time delay of response',
-   'System load (CPU/RAM/Disk)',
-   'Requests processed per unit time'
- ],
- answers:[
-  'Error Rate',
-  'Latency',
-  'Resource Utilization',
-  'Throughput'
-],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Know each metric.'},
 
-{id:18,title:'Throughput vs latency',type:'tf',diff:'hard',
- q:'Simultaneous increase in throughput and sharp rise in latency is a strong indicator of system saturation.',
- correct:true,
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Indicates overload.'},
+  {id:50,title:'Memory Management — Paging File',type:'fill',diff:'extreme',
+   q:'In Windows, the hidden file on the hard drive used to supplement physical RAM is named ___.sys.',
+   ph:'filename...',answers:['pagefile','pagefile.sys'],
+   fb_ok:'✓ Correct — pagefile.sys is the system file used for virtual memory.',
+   fb_fail:'✗ The correct answer is pagefile.sys.'},
 
-{id:19,title:'P95 explained',type:'fill',diff:'hard',
- q:'P95 latency highlights ___ latency, exposing worst-case user experience hidden by averages.',
- ph:'one word...',answers:['tail','outlier'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ P95 exposes tail latency.'},
+  {id:51,title:'NT Architecture — Executive Services',type:'fill',diff:'extreme',
+   q:'The upper layer of the NT Kernel that provides I/O, memory management, and process management is called the NT ___.',
+   ph:'one word...',answers:['Executive','executive'],
+   fb_ok:'✓ Correct — the Executive Services handle the heavy lifting of the kernel.',
+   fb_fail:'✗ The missing term is "Executive".'},
 
-{id:20,title:'TTFB definition',type:'fill',diff:'hard',
- q:'TTFB stands for Time to ___ Byte.',
- ph:'...',answers:['First','first'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ First.'},
+  {id:52,title:'Linux — Root User UID',type:'fill',diff:'extreme',
+   q:'On a standard Linux system, the "root" superuser is always assigned a User ID (UID) of ___.',
+   ph:'number...',answers:['0'],
+   fb_ok:'✓ Correct — UID 0 is reserved for the root user.',
+   fb_fail:'✗ The root user UID is 0.'},
 
-{id:21,title:'CPU steal',type:'fill',diff:'hard',
- q:'CPU Steal occurs when the ___ takes CPU time away from a virtual machine.',
- ph:'one word...',answers:['hypervisor'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Hypervisor reclaims CPU.'},
+  {id:53,title:'Security — Privilege Escalation',type:'tf',diff:'extreme',
+   q:'Horizontal privilege escalation occurs when a user gains access to functions or data belonging to an administrative user.',
+   correct:false,
+   fb_ok:'✓ Correct. Gaining admin rights is Vertical escalation. Horizontal is gaining access to a user of the same rank.',
+   fb_fail:'✗ Incorrect. That is Vertical escalation. Horizontal is accessing a peer\'s data.'},
 
-{id:22,title:'RAM swapping consequence',type:'fill',diff:'hard',
- q:'Swapping causes severe performance degradation because disk access is significantly ___ than RAM.',
- ph:'one word...',answers:['slower'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Disk is slower than RAM.'},
+  {id:54,title:'Windows Boot — UEFI vs BIOS',type:'tf',diff:'hard',
+   q:'UEFI provides a "Secure Boot" feature that prevents any unauthorized operating system or "rootkit" malware from starting during the boot process.',
+   correct:true,
+   fb_ok:'✓ Correct. Secure Boot is a primary security advantage of UEFI.',
+   fb_fail:'✗ Incorrect. UEFI Secure Boot is designed exactly to block unauthorized boot loaders.'},
 
-{id:23,title:'Disk I/O wait',type:'tf',diff:'hard',
- q:'High I/O wait indicates CPU idle time caused by slow disk operations.',
- correct:true,
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Disk bottleneck.'},
+  {id:55,title:'NTFS — MFT definition',type:'fill',diff:'extreme',
+   q:'The database that stores metadata for every file and directory on an NTFS volume is the Master ___ Table.',
+   ph:'one word...',answers:['File','file'],
+   fb_ok:'✓ Correct — the MFT is the heart of NTFS.',
+   fb_fail:'✗ The correct term is "File" (Master File Table).'},
 
-{id:24,title:'Error rate — partial failure',type:'fill',diff:'hard',
- q:'A system that is operational but failing some requests is experiencing a ___ failure.',
- ph:'one word...',answers:['partial'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Partial failure.'},
-//  ═══════════════════════════════════════
-// // LESSON 2.3 — MONITORING SERVER PERFORMANCE (Q26–33)
-// // HARD CONTINUATION
-// ═══════════════════════════════════════
-{id:25,title:'ICMP ping limitation',type:'mc',diff:'hard',
- q:'A server responds to ICMP ping but its hosted application is unreachable. What is the MOST accurate explanation?',
- opts:[
-   'Physical connectivity is broken',
-   'The OS network stack is operational, but the application/service layer has failed',
-   'DNS resolution is incorrect',
-   'The NIC is disabled'
- ],correct:1,
- fb_ok:'✓ Ping only verifies Layer 3 connectivity — not application availability.',
- fb_fail:'✗ ICMP only checks OS/network layer, not application health.'},
+  {id:56,title:'Monitoring — Saturation Indicators',type:'fill',diff:'extreme',
+   q:'When a resource is saturated, the most common symptom observed in monitoring is an increase in ___ length.',
+   ph:'one word...',answers:['queue','Queue'],
+   fb_ok:'✓ Correct — queue length increases when a system cannot keep up.',
+   fb_fail:'✗ The correct answer is queue.'},
 
-{id:26,title:'SNMP — MIB/OID',type:'fill',diff:'hard',
- q:'In SNMP architecture, each measurable parameter is uniquely identified using an ___.',
- ph:'three-letter term...',answers:['OID'],
- fb_ok:'✓ OID uniquely identifies each metric.',
- fb_fail:'✗ OID is the correct identifier.'},
+  {id:57,title:'SNMP — Community Strings',type:'tf',diff:'hard',
+   q:'SNMP v1 and v2c use "community strings" as a form of password, but these are sent across the network in plain text.',
+   correct:true,
+   fb_ok:'✓ Correct. This is why SNMP v3 is preferred for security, as it adds encryption.',
+   fb_fail:'✗ Incorrect. Version 1 and 2 community strings are indeed unencrypted plain text.'},
 
-{id:27,title:'SNMP poll vs trap',type:'match',diff:'hard',
- q:'Match SNMP communication types with their correct behavior.',
- chips:['Polling','SNMP Trap'],
- dropDescs:[
-   'Event-driven notification sent automatically upon threshold breach',
-   'Periodic request-response querying initiated by the monitoring system'
- ],
- answers:['Polling','SNMP Trap'],
- fb_ok:'✓ Polling is scheduled; traps are event-driven.',
- fb_fail:'✗ Polling = request; Trap = alert.'},
+  {id:58,title:'Patch Management — Rollback Strategy',type:'fill',diff:'hard',
+   q:'A detailed plan to revert a system to its previous functional state if a patch fails is known as a ___ strategy.',
+   ph:'one word...',answers:['rollback','Rollback'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The term is Rollback.'},
 
-{id:28,title:'Agent-based monitoring',type:'mc',diff:'hard',
- q:'What is the PRIMARY advantage of agent-based monitoring over agentless methods?',
- opts:[
-   'Lower network bandwidth consumption',
-   'Deep visibility into OS-level and application-specific metrics',
-   'No installation required',
-   'Faster basic connectivity checks'
- ],correct:1,
- fb_ok:'✓ Agents provide deep, internal system visibility.',
- fb_fail:'✗ Agents allow inspection inside the OS and applications.'},
+  {id:59,title:'Vulnerability — CVE acronym',type:'fill',diff:'hard',
+   q:'The standardized list of publicly disclosed cybersecurity vulnerabilities uses the acronym ___.',
+   ph:'acronym...',answers:['CVE','cve'],
+   fb_ok:'✓ Correct — Common Vulnerabilities and Exposures.',
+   fb_fail:'✗ The acronym is CVE.'},
 
-{id:29,title:'Monitoring tools match',type:'match',diff:'hard',
- q:'Match each monitoring tool to its MOST accurate primary function.',
- chips:['Top/Htop','Netstat','Prometheus','Ping (ICMP)'],
- dropDescs:[
-   'Time-series metric collection, storage, and alerting',
-   'Real-time system resource usage at process level',
-   'Verification of host reachability and latency',
-   'Inspection of active network connections and sockets'
- ],
- answers:['Top/Htop','Netstat','Prometheus','Ping (ICMP)'],
- fb_ok:'✓ Correct mapping of monitoring tools.',
- fb_fail:'✗ Know each tool’s role precisely.'},
+  {id:60,title:'Networking — DHCP Discover',type:'fill',diff:'extreme',
+   q:'The four-step process for a client to obtain an IP address via DHCP is summarized by the acronym ___.',
+   ph:'acronym...',answers:['DORA','dora'],
+   fb_ok:'✓ Correct — Discover, Offer, Request, Acknowledge.',
+   fb_fail:'✗ The acronym is DORA.'},
 
-{id:30,title:'Agent trade-off',type:'tf',diff:'hard',
- q:'Agent-based monitoring introduces resource overhead that must be considered in performance-sensitive systems.',
- correct:true,
- fb_ok:'✓ Agents consume CPU and RAM.',
- fb_fail:'✗ Agents have overhead.'},
+  {id:61,title:'Networking — Subnet Mask',type:'tf',diff:'hard',
+   q:'A subnet mask of 255.255.255.0 is equivalent to a CIDR notation of /24.',
+   correct:true,
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ Incorrect. 255.255.255.0 is indeed /24.'},
 
-{id:31,title:'Silent failure danger',type:'scenario',diff:'hard',
- q:'A monitoring dashboard shows 100% uptime, but logs reveal persistent 5xx errors affecting users. What is the ROOT monitoring failure?',
- opts:[
-   'Insufficient SNMP configuration',
-   'Over-reliance on availability checks instead of application-level metrics',
-   'Lack of RAM monitoring',
-   'Firewall misconfiguration'
- ],correct:1,
- fb_ok:'✓ Availability ≠ functionality. App-level metrics are required.',
- fb_fail:'✗ Uptime checks alone cannot detect application failures.'},
+  {id:62,title:'System Logs — Event Viewer',type:'fill',diff:'hard',
+   q:'In Windows, the primary tool for viewing system, security, and application logs is the ___ Viewer.',
+   ph:'one word...',answers:['Event','event'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The tool is Event Viewer.'},
 
-{id:32,title:'Data Transfer Rate bottleneck',type:'mc',diff:'hard',
- q:'Under high load, a system experiences reduced throughput despite normal CPU usage. What is the MOST probable bottleneck?',
- opts:[
-   'DNS resolution latency',
-   'Network interface or disk I/O limitations',
-   'Routing table misconfiguration',
-   'SNMP polling delay'
- ],correct:1,
- fb_ok:'✓ Throughput bottlenecks are usually I/O-related.',
- fb_fail:'✗ Look at NIC or disk when throughput drops.'},
+  {id:63,title:'Troubleshooting — Split-Half Search',type:'fill',diff:'extreme',
+   q:'A troubleshooting method that involves testing the middle of a system to quickly narrow down where a fault lies is called the ___-half approach.',
+   ph:'one word...',answers:['split','Split'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The term is Split-half.'},
 
-// ═══════════════════════════════════════
-// // MODULE 3.1 — CONFIGURING SWITCHES, ROUTERS & FIREWALLS (Q34–40)
-// // HARD
-// ═══════════════════════════════════════
-{id:33,title:'Switch function',type:'mc',diff:'hard',
- q:'What is the fundamental role of a Layer 2 switch in a network?',
- opts:[
-   'Route packets between networks using IP addresses',
-   'Forward frames within a LAN using MAC address tables',
-   'Filter traffic based on security policies',
-   'Assign IP addresses dynamically'
- ],correct:1,
- fb_ok:'✓ Switches forward frames using MAC addresses.',
- fb_fail:'✗ Switches operate at Layer 2 using MAC addresses.'},
+  {id:64,title:'Server Management — IPMI',type:'fill',diff:'extreme',
+   q:'The hardware standard that allows administrators to manage a server remotely even if the OS is crashed or the power is off is ___.',
+   ph:'acronym...',answers:['IPMI','ipmi'],
+   fb_ok:'✓ Correct — Intelligent Platform Management Interface.',
+   fb_fail:'✗ The correct acronym is IPMI.'},
 
-{id:34,title:'VLAN purpose',type:'tf',diff:'hard',
- q:'VLANs create isolated broadcast domains within a single physical switch, improving both segmentation and security.',
- correct:true,
- fb_ok:'✓ VLANs isolate traffic logically.',
- fb_fail:'✗ VLANs separate broadcast domains.'},
+  {id:65,title:'NT Kernel — Microkernel vs Hybrid',type:'tf',diff:'extreme',
+   q:'The Windows NT kernel is strictly a "Pure Microkernel" because all system services run in User Mode to ensure maximum stability.',
+   correct:false,
+   fb_ok:'✓ Correct. NT is a "Hybrid Kernel" because some services run in Kernel Mode for performance.',
+   fb_fail:'✗ Incorrect. NT is a Hybrid Kernel, not a pure microkernel.'},
 
-{id:35,title:'Router OSI layer',type:'fill',diff:'hard',
- q:'Routers operate at OSI Layer ___ and make forwarding decisions using IP addressing.',
- ph:'number...',answers:['3'],
- fb_ok:'✓ Layer 3.',
- fb_fail:'✗ Routers are Layer 3 devices.'},
+  {id:66,title:'Security — Salted Hashes',type:'fill',diff:'extreme',
+   q:'Adding a unique, random string of data to a password before hashing it to protect against rainbow table attacks is called ___.',
+   ph:'one word...',answers:['salting','Salting'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The process is called salting.'},
 
-{id:36,title:'Router interface scenario',type:'scenario',diff:'hard',
- q:'A router connects an internal LAN to an ISP. What is the MINIMUM interface requirement and purpose?',
- opts:[
-   'One interface for both LAN and WAN',
-   'Two interfaces: one internal (LAN) and one external (WAN)',
-   'Three interfaces including DMZ',
-   'One interface per VLAN'
- ],correct:1,
- fb_ok:'✓ Minimum is LAN + WAN.',
- fb_fail:'✗ At least two interfaces are required.'},
+  {id:67,title:'Storage — RAID 10',type:'tf',diff:'hard',
+   q:'RAID 10 (1+0) combines the performance of stripping with the redundancy of mirroring.',
+   correct:true,
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ Incorrect. RAID 10 is indeed a stripe of mirrors.'},
 
-{id:37,title:'Firewall — least privilege',type:'tf',diff:'hard',
- q:'Applying least privilege in firewall rules means default-deny with only explicitly required traffic permitted.',
- correct:true,
- fb_ok:'✓ Deny-all, allow necessary.',
- fb_fail:'✗ Least privilege = deny by default.'},
+  {id:68,title:'Linux — Sudoers file',type:'fill',diff:'extreme',
+   q:'The specific configuration file that defines which users have permission to run commands as root is located at /etc/___.',
+   ph:'filename...',answers:['sudoers'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The file is /etc/sudoers.'},
 
-{id:38,title:'Firewall rule match',type:'match',diff:'hard',
- q:'Match firewall/network concepts to their correct function.',
- chips:['Allow/Deny Rules','Stateful Inspection','NAT','Port Security'],
- dropDescs:[
-   'Tracks connection states for intelligent filtering',
-   'Controls traffic based on defined policies',
-   'Restricts switch port access by MAC address',
-   'Translates private IPs to public addresses'
- ],
- answers:['Allow/Deny Rules','Stateful Inspection','NAT','Port Security'],
- fb_ok:'✓ Correct mapping.',
- fb_fail:'✗ Know each concept clearly.'},
+  {id:69,title:'System Maintenance — Defragmentation',type:'tf',diff:'hard',
+   q:'Running a traditional disk defragmentation on a Solid State Drive (SSD) is recommended to improve its lifespan and speed.',
+   correct:false,
+   fb_ok:'✓ Correct. You should never defrag an SSD; it causes unnecessary wear without speed benefits.',
+   fb_fail:'✗ Incorrect. Defragging an SSD is harmful and unnecessary.'},
 
-{id:39,title:'Switch best practice',type:'mc',diff:'hard',
- q:'What is the MOST secure approach to handling unused switch ports?',
- opts:[
-   'Leave them enabled for flexibility',
-   'Assign to unused VLAN and enable port security',
-   'Configure as trunk ports',
-   'Disable monitoring on them'
- ],correct:1,
- fb_ok:'✓ Secure unused ports.',
- fb_fail:'✗ Always isolate and secure unused ports.'},
+  {id:70,title:'Networking — MTU',type:'fill',diff:'extreme',
+   q:'The maximum size of a packet that can be sent over a network interface is called the ___.',
+   ph:'acronym...',answers:['MTU','mtu'],
+   fb_ok:'✓ Correct — Maximum Transmission Unit.',
+   fb_fail:'✗ The acronym is MTU.'},
 
-// ═══════════════════════════════════════
-// // MODULE 3.2 — ENSURING CONNECTIVITY (Q41–44)
-// // HARD
-// ═══════════════════════════════════════
-{id:40,title:'Default gateway',type:'scenario',diff:'hard',
- q:'A host communicates locally but cannot access external networks. What is the MOST likely issue?',
- opts:[
-   'Incorrect DNS',
-   'Missing or incorrect default gateway',
-   'Firewall blocking outbound traffic',
-   'Incorrect subnet mask only'
- ],correct:1,
- fb_ok:'✓ Gateway handles external routing.',
- fb_fail:'✗ Gateway is required to leave subnet.'},
+  {id:71,title:'Authentication — Kerberos',type:'fill',diff:'extreme',
+   q:'The default authentication protocol used by Windows Active Directory which uses "tickets" to grant access is ___.',
+   ph:'one word...',answers:['Kerberos','kerberos'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The protocol is Kerberos.'},
 
-{id:41,title:'Subnetting purpose',type:'tf',diff:'hard',
- q:'Subnetting reduces broadcast domains and improves both performance and security segmentation.',
- correct:true,
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Subnetting improves efficiency.'},
+  {id:72,title:'Cloud Computing — IaaS',type:'tf',diff:'medium',
+   q:'In an Infrastructure as a Service (IaaS) model, the provider is responsible for patching the Guest Operating System.',
+   correct:false,
+   fb_ok:'✓ Correct. In IaaS, the CUSTOMER is responsible for the Guest OS; the provider handles the hardware/virtualization.',
+   fb_fail:'✗ Incorrect. The customer patches the OS in IaaS.'},
 
-{id:42,title:'Redundancy examples',type:'mc',diff:'hard',
- q:'Which option BEST represents true network redundancy?',
- opts:[
-   'Single high-performance router',
-   'Static IP configuration',
-   'Backup links with automatic failover mechanisms',
-   'Disabling unused ports'
- ],correct:2,
- fb_ok:'✓ Redundancy requires failover.',
- fb_fail:'✗ Redundancy = backup paths.'},
+  {id:73,title:'Networking — Default Gateway',type:'fill',diff:'hard',
+   q:'The IP address of the router that a host uses to send traffic outside its local subnet is called the default ___.',
+   ph:'one word...',answers:['gateway','Gateway'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ The term is gateway.'},
 
-{id:43,title:'Routing table',type:'fill',diff:'hard',
- q:'Routers rely on ___ tables to determine optimal forwarding paths.',
- ph:'...',answers:['routing'],
- fb_ok:'✓ Routing tables.',
- fb_fail:'✗ Routing tables determine paths.'},
+  {id:74,title:'Windows Registry — Hives',type:'fill',diff:'extreme',
+   q:'The major branches of the Windows Registry, such as HKEY_LOCAL_MACHINE, are commonly referred to as registry ___.',
+   ph:'one word...',answers:['hives','Hives'],
+   fb_ok:'✓ Correct.',
+   fb_fail:'✗ They are called hives.'},
+   // MODULE 1, 2 & 3 — QUIZ ITEMS (Q75–99)
+// DIFFICULTY: EXTREME / ARCHITECT LEVEL (FILL & TF ONLY)
+//═══════════════════════════════════════
 
-// ═══════════════════════════════════════
-// // MODULE 3.3 — TROUBLESHOOTING NETWORK PROBLEMS (Q45–50)
-// // HARD
-// ═══════════════════════════════════════
-{id:44,title:'Bottom-up troubleshooting',type:'mc',diff:'hard',
- q:'Bottom-up troubleshooting begins at which OSI layer?',
- opts:[
-   'Layer 7',
-   'Layer 4',
-   'Layer 1',
-   'Layer 3'
- ],correct:2,
- fb_ok:'✓ Start at Physical layer.',
- fb_fail:'✗ Bottom-up starts at Layer 1.'},
+// MODULE 1, 2 & 3 — QUIZ ITEMS (Q75–99)
+// DIFFICULTY: EXTREME / ARCHITECT LEVEL (MULTIPLE CHOICE)
+// FORMAT: KEY-VALUE PAIR PER USER SPECIFICATION
+//═══════════════════════════════════════
 
-{id:45,title:'Diagnostic tools match',type:'match',diff:'hard',
- q:'Match each diagnostic tool to its primary troubleshooting role.',
- chips:['Ping','Traceroute','IP config tools'],
- dropDescs:[
-   'Displays hop-by-hop path to destination',
-   'Tests connectivity between hosts',
-   'Shows IP configuration details'
- ],
- answers:['Ping','Traceroute','IP config tools'],
- fb_ok:'✓ Correct.',
- fb_fail:'✗ Know basic tools.'},
+  {
+    id: 75, title: 'NTFS — Alternate Data Streams', type: 'mc', diff: 'extreme',
+    q: 'A hidden feature of NTFS that allows multiple streams of metadata to be associated with a single filename is called "Alternate Data ___".',
+    opts: ['Headers', 'Streams', 'Blocks', 'Segments'],
+    correct: 1,
+    fb_ok: '✓ Correct. ADS is frequently used by system metadata or to hide malicious code.',
+    fb_fail: '✗ Incorrect. The correct term is Alternate Data Streams.'
+  },
+  {
+    id: 76, title: 'Security — Deployment Strategy', type: 'mc', diff: 'hard',
+    q: 'In a "Blue-Green" deployment, which environment is typically defined as the "Green" environment once the update is successful?',
+    opts: ['The idle staging area', 'The crashed server', 'The live production system', 'The local developer machine'],
+    correct: 2,
+    fb_ok: '✓ Correct. Green represents the new live production environment after the switch.',
+    fb_fail: '✗ Incorrect. Green becomes the live production system.'
+  },
+  {
+    id: 77, title: 'Linux — Inode Exhaustion', type: 'mc', diff: 'extreme',
+    q: 'A Linux filesystem may report being "full" despite having gigabytes of free disk space if it exhausts which resource?',
+    opts: ['Swap Space', 'Sectors', 'Inodes', 'File Descriptors'],
+    correct: 2,
+    fb_ok: '✓ Correct. Every file requires an inode; millions of tiny files can exhaust the inode table.',
+    fb_fail: '✗ Incorrect. The resource exhausted is the Inodes.'
+  },
+  {
+    id: 78, title: 'Networking — Traffic Routing', type: 'mc', diff: 'extreme',
+    q: 'Which routing methodology assigns a single IP address to multiple nodes and routes traffic to the node "nearest" to the requester?',
+    opts: ['Unicast', 'Multicast', 'Broadcast', 'Anycast'],
+    correct: 3,
+    fb_ok: '✓ Correct. Anycast is widely used by DNS providers and CDNs for speed and reliability.',
+    fb_fail: '✗ Incorrect. This methodology is called Anycast.'
+  },
+  {
+    id: 79, title: 'Windows 11 — Virtualization Security', type: 'mc', diff: 'extreme',
+    q: 'Which Windows feature uses Virtualization-Based Security (VBS) to isolate and protect sensitive secrets like user hashes?',
+    opts: ['AppLocker', 'Credential Guard', 'Windows Defender', 'BitLocker'],
+    correct: 1,
+    fb_ok: '✓ Correct. Credential Guard uses the hypervisor to isolate secrets from the kernel.',
+    fb_fail: '✗ Incorrect. The feature is Credential Guard.'
+  },
+  {
+    id: 80, title: 'Performance — Memory Management', type: 'mc', diff: 'extreme',
+    q: 'What is the technical term for a state where a CPU is so busy swapping data between RAM and Disk that it stops performing useful work?',
+    opts: ['Paging', 'Fracking', 'Thrashing', 'Caching'],
+    correct: 2,
+    fb_ok: '✓ Correct. Thrashing results in total system sluggishness.',
+    fb_fail: '✗ Incorrect. The term is Thrashing.'
+  },
+  {
+    id: 81, title: 'Networking — BGP Protocol', type: 'mc', diff: 'extreme',
+    q: 'The Border Gateway Protocol (BGP) is used primarily for exchanging routing information between which entities?',
+    opts: ['Local VLANs', 'Internal Subnets', 'Autonomous Systems', 'Home Routers'],
+    correct: 2,
+    fb_ok: '✓ Correct. BGP is the protocol that manages how packets travel between ISPs.',
+    fb_fail: '✗ Incorrect. BGP routes between Autonomous Systems (AS).'
+  },
+  {
+    id: 82, title: 'Linux — systemd Targets', type: 'mc', diff: 'hard',
+    q: 'In a systemd-based Linux distribution, the "multi-user.target" is functionally equivalent to which legacy SysVinit runlevel?',
+    opts: ['Runlevel 1', 'Runlevel 3', 'Runlevel 5', 'Runlevel 6'],
+    correct: 1,
+    fb_ok: '✓ Correct. Runlevel 3 is the standard non-graphical multi-user mode.',
+    fb_fail: '✗ Incorrect. It is equivalent to Runlevel 3.'
+  },
+  {
+    id: 83, title: 'Security — Controls', type: 'mc', diff: 'hard',
+    q: 'Requiring two different people to approve a high-risk change is an example of which security principle?',
+    opts: ['Least Privilege', 'Defense in Depth', 'Separation of Duties', 'Non-repudiation'],
+    correct: 2,
+    fb_ok: '✓ Correct. This prevents any single person from having too much control.',
+    fb_fail: '✗ Incorrect. This is Separation of Duties.'
+  },
+  {
+    id: 84, title: 'Windows Registry — Hives', type: 'mc', diff: 'hard',
+    q: 'The HKEY_CURRENT_USER (HKCU) registry hive is actually a pointer to a specific subkey within which other hive?',
+    opts: ['HKEY_LOCAL_MACHINE', 'HKEY_CLASSES_ROOT', 'HKEY_USERS', 'HKEY_CURRENT_CONFIG'],
+    correct: 2,
+    fb_ok: '✓ Correct. HKCU points to the current user\'s specific SID entry in HKEY_USERS.',
+    fb_fail: '✗ Incorrect. It is a pointer to HKEY_USERS.'
+  },
+  {
+    id: 85, title: 'Networking — Layer 2 Attacks', type: 'mc', diff: 'extreme',
+    q: 'Which attack involves sending spoofed messages to link a MAC address to a legitimate IP address on a local network?',
+    opts: ['DNS Hijacking', 'ARP Poisoning', 'BGP Hijacking', 'DHCP Snooping'],
+    correct: 1,
+    fb_ok: '✓ Correct. Address Resolution Protocol poisoning allows Man-in-the-Middle attacks.',
+    fb_fail: '✗ Incorrect. This is ARP Poisoning.'
+  },
+  {
+    id: 86, title: 'Monitoring — Advanced Techniques', type: 'mc', diff: 'extreme',
+    q: 'What type of monitoring uses scripted browsers to simulate real user interactions and verify application flow?',
+    opts: ['Passive Monitoring', 'Agentless Monitoring', 'Synthetic Monitoring', 'Log Aggregation'],
+    correct: 2,
+    fb_ok: '✓ Correct. Synthetic monitoring mimics user behavior to catch issues before real users do.',
+    fb_fail: '✗ Incorrect. This is called Synthetic Monitoring.'
+  },
+  {
+    id: 87, title: 'Storage — Virtualization', type: 'mc', diff: 'hard',
+    q: 'Which storage feature allows you to allocate more virtual disk space to VMs than is physically available on the host?',
+    opts: ['Thick Provisioning', 'Thin Provisioning', 'RAID 0', 'JBOD'],
+    correct: 1,
+    fb_ok: '✓ Correct. Thin provisioning only consumes physical space as data is written.',
+    fb_fail: '✗ Incorrect. The feature is Thin Provisioning.'
+  },
+  {
+    id: 88, title: 'Linux — Permissions', type: 'mc', diff: 'extreme',
+    q: 'Which special permission bit ensures that only the owner of a file (or root) can delete or rename it within a directory?',
+    opts: ['SetUID bit', 'SetGID bit', 'Sticky bit', 'Execute bit'],
+    correct: 2,
+    fb_ok: '✓ Correct. This is commonly applied to the /tmp directory.',
+    fb_fail: '✗ Incorrect. It is the Sticky bit.'
+  },
+  {
+    id: 89, title: 'Patch Management — QA', type: 'mc', diff: 'hard',
+    q: 'What is the term for testing a system after a patch to ensure that existing functionality hasn\'t been broken by the change?',
+    opts: ['Unit Testing', 'Stress Testing', 'Regression Testing', 'Penetration Testing'],
+    correct: 2,
+    fb_ok: '✓ Correct. Regression testing ensures the system hasn\'t "regressed" in quality.',
+    fb_fail: '✗ Incorrect. This is called Regression Testing.'
+  },
+  {
+    id: 90, title: 'Windows — Maintenance Tools', type: 'mc', diff: 'extreme',
+    q: 'Which command-line utility is used to repair a Windows image or prepare a Windows Preinstallation Environment (WinPE)?',
+    opts: ['SFC', 'CHKDSK', 'DISM', 'NETSH'],
+    correct: 2,
+    fb_ok: '✓ Correct. DISM is the primary tool for image repair.',
+    fb_fail: '✗ Incorrect. The correct tool is DISM.'
+  },
+  {
+    id: 91, title: 'Networking — VLANs', type: 'mc', diff: 'extreme',
+    q: 'The industry-standard protocol for encapsulating VLAN tags within Ethernet frames is which of the following?',
+    opts: ['802.11ac', '802.3ad', '802.1Q', '802.1X'],
+    correct: 2,
+    fb_ok: '✓ Correct. 802.1Q, or "Dot1q," is the universal standard for VLAN trunking.',
+    fb_fail: '✗ Incorrect. The standard is 802.1Q.'
+  },
+  {
+    id: 92, title: 'Security — Deception', type: 'mc', diff: 'hard',
+    q: 'A decoy system designed to be intentionally vulnerable to lure in attackers for observation is called a:',
+    opts: ['Firewall', 'Honeypot', 'DMZ', 'Proxy'],
+    correct: 1,
+    fb_ok: '✓ Correct. Honeypots provide early warning and intelligence on attacker methods.',
+    fb_fail: '✗ Incorrect. It is a Honeypot.'
+  },
+  {
+    id: 93, title: 'Windows — Identity', type: 'mc', diff: 'hard',
+    q: 'In Windows, what does the acronym SID stand for in relation to user accounts?',
+    opts: ['System Identification Data', 'Security Identifier', 'Sequential Index Descriptor', 'Session ID'],
+    correct: 1,
+    fb_ok: '✓ Correct. SIDs are unique strings used to identify security principals.',
+    fb_fail: '✗ Incorrect. SID stands for Security Identifier.'
+  },
+  {
+    id: 94, title: 'Cloud — Instance Storage', type: 'mc', diff: 'extreme',
+    q: 'Storage that is physically attached to the host machine and is lost when the VM instance is deleted is known as:',
+    opts: ['Persistent Storage', 'Ephemeral Storage', 'Cold Storage', 'Archive Storage'],
+    correct: 1,
+    fb_ok: '✓ Correct. Ephemeral storage is high-performance but temporary.',
+    fb_fail: '✗ Incorrect. This is Ephemeral Storage.'
+  },
+  {
+    id: 95, title: 'Networking — Proxies', type: 'mc', diff: 'extreme',
+    q: 'Which type of proxy sits "in front" of web servers and handles incoming client requests to provide load balancing and SSL termination?',
+    opts: ['Forward Proxy', 'Transparent Proxy', 'Reverse Proxy', 'Open Proxy'],
+    correct: 2,
+    fb_ok: '✓ Correct. Reverse proxies protect and scale the backend servers.',
+    fb_fail: '✗ Incorrect. It is a Reverse Proxy.'
+  },
+  {
+    id: 96, title: 'Linux — Process States', type: 'mc', diff: 'extreme',
+    q: 'What is a process called that has finished execution but still occupies a slot in the process table because its parent hasn\'t acknowledged it?',
+    opts: ['Orphan', 'Daemon', 'Zombie', 'Sleeping'],
+    correct: 2,
+    fb_ok: '✓ Correct. Zombie processes don\'t consume CPU/RAM but do occupy a PID.',
+    fb_fail: '✗ Incorrect. This is a Zombie process.'
+  },
+  {
+    id: 97, title: 'Backup — Strategy', type: 'mc', diff: 'hard',
+    q: 'According to the "3-2-1" backup rule, how many different types of storage media should be used?',
+    opts: ['1', '2', '3', '5'],
+    correct: 1,
+    fb_ok: '✓ Correct. 3 copies, 2 different media types, 1 offsite.',
+    fb_fail: '✗ Incorrect. The rule specifies 2 different types of media.'
+  },
+  {
+    id: 98, title: 'Windows — Power Management', type: 'mc', diff: 'hard',
+    q: 'Windows "Fast Startup" achieves quicker boot times by refusing to fully close which system component during shutdown?',
+    opts: ['User Applications', 'The NT Kernel', 'Network Drivers', 'Browser Cache'],
+    correct: 1,
+    fb_ok: '✓ Correct. It hibernates the kernel session to disk to speed up the next boot.',
+    fb_fail: '✗ Incorrect. It saves the state of the NT Kernel.'
+  },
+  {
+    id: 99, title: 'Business Operations — IT Support', type: 'mc', diff: 'hard',
+    q: 'A document that defines the specific uptime percentage and penalty credits for a service is called a(n):',
+    opts: ['MOU', 'SLA', 'SOW', 'NDA'],
+    correct: 1,
+    fb_ok: '✓ Correct. SLA stands for Service Level Agreement.',
+    fb_fail: '✗ Incorrect. The document is an SLA.'
+  }
 
-{id:46,title:'Common network problems',type:'mc',diff:'hard',
- q:'A host has IP 169.254.x.x. What does this indicate?',
- opts:[
-   'Manual static IP assignment',
-   'Failure to obtain DHCP lease resulting in APIPA address',
-   'Firewall restriction',
-   'Routing misconfiguration'
- ],correct:1,
- fb_ok:'✓ DHCP failure.',
- fb_fail:'✗ APIPA = DHCP failure.'},
 
-{id:47,title:'One change at a time',type:'tf',diff:'hard',
- q:'Applying multiple fixes simultaneously during troubleshooting is recommended to accelerate resolution.',
- correct:false,
- fb_ok:'✓ False — isolate changes.',
- fb_fail:'✗ One change at a time is best practice.'},
+   
 
-{id:48,title:'Misconfigured firewall',type:'scenario',diff:'hard',
- q:'Web access works but Telnet fails. What is the MOST accurate explanation?',
- opts:[
-   'Outbound traffic blocked',
-   'Firewall allows HTTP/HTTPS but blocks insecure Telnet by design',
-   'Switch blocking MAC',
-   'Routing issue'
- ],correct:1,
- fb_ok:'✓ Secure firewall behavior.',
- fb_fail:'✗ Telnet is intentionally blocked.'},
 
-{id:49,title:'Troubleshooting documentation',type:'mc',diff:'hard',
- q:'Why is documenting resolved issues critical in network operations?',
- opts:[
-   'Compliance only',
-   'Creates reusable knowledge base and accelerates future incident resolution',
-   'Required before reboot',
-   'Eliminates need for monitoring'
- ],correct:1,
- fb_ok:'✓ Documentation builds knowledge.',
- fb_fail:'✗ Documentation improves future response.'}
+
+
 ];
 
 // ── SHUFFLE ─────────────────────────────────────
@@ -1784,8 +2057,8 @@ function showResult(){
     const card=document.getElementById('aristotle-card');
     const predLow=parseInt(predictedBand.split('-')[0]);
     const predHigh=parseInt(predictedBand.split('-')[1]);
-    const beat=ok>predHigh,matched=ok>=predLow&&ok<=predHigh;
-    const QUOTES={'0-24':{beat:"Even the humble seed, when it surpasses its own expectation, carries within it the promise of an oak.",match:"To know that you know nothing — this is the beginning of wisdom. You have found your starting point.",short:"To know that you know nothing — this is the beginning of wisdom. You have found your starting point."},'25-34':{beat:"Excellence is not a gift, but a skill that takes practice. Today, you practiced better than you believed.",match:"You aimed with honesty and struck true. A virtuous mind knows its current measure.",short:"The roots of education are bitter, but the fruit is sweet. Return to the roots."},'35-45':{beat:"We are what we repeatedly do. It seems you have been doing more than you have given yourself credit for.",match:"Knowing yourself is the beginning of all wisdom. You know yourself well — now push beyond.",short:"Patience is bitter, yet its fruit is sweet. The gap between ambition and result is merely unfinished practice."},'46-50':{beat:"Flawless. You knew exactly what you were capable of. This is eudaimonia.",match:"You have reached the highest form — where knowledge, effort, and expectation become one. This is eudaimonia.",short:"It is possible to fail in many ways, but to succeed is possible only in one way. You are close. Find that one way."}};
+    const beat=pct>predHigh,matched=pct>=predLow&&pct<=predHigh;
+    const QUOTES={'0-49':{beat:"Even the humble seed, when it surpasses its own expectation, carries within it the promise of an oak.",match:"To know that you know nothing — this is the beginning of wisdom. You have found your starting point.",short:"To know that you know nothing — this is the beginning of wisdom. You have found your starting point."},'50-74':{beat:"Excellence is not a gift, but a skill that takes practice. Today, you practiced better than you believed.",match:"You aimed with honesty and struck true. A virtuous mind knows its current measure.",short:"The roots of education are bitter, but the fruit is sweet. Return to the roots."},'75-89':{beat:"We are what we repeatedly do. It seems you have been doing more than you have given yourself credit for.",match:"Knowing yourself is the beginning of all wisdom. You know yourself well — now push beyond.",short:"Patience is bitter, yet its fruit is sweet. The gap between ambition and result is merely unfinished practice."},'90-100':{beat:"Flawless. You knew exactly what you were capable of. This is eudaimonia.",match:"You have reached the highest form — where knowledge, effort, and expectation become one. This is eudaimonia.",short:"It is possible to fail in many ways, but to succeed is possible only in one way. You are close. Find that one way."}};
     const outcome=beat?'beat':matched?'match':'short';
     const quote=QUOTES[predictedBand][outcome];
     const scoreColor=beat||matched?'var(--teal)':'var(--red)';
